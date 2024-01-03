@@ -5,8 +5,8 @@ import {join} from 'node:path';
 import {rimraf} from 'rimraf';
 import {beforeEach, describe, expect, it} from 'vitest';
 
-const tmpDir = './tmp';
-const dataFile = join(tmpDir, 'registry.sqlite');
+const tmpDir = './tmp/registry';
+const dataFile = join(tmpDir, 'data.sqlite');
 let connection: Connection;
 
 beforeEach(async () => {
@@ -35,7 +35,7 @@ describe('save', async () => {
     expect(items[0].iri).toEqual(iri);
   });
 
-  it('updates an item with an IRI that already exists', async () => {
+  it('saves an item with an IRI that already exists', async () => {
     const registry = new Registry({connection});
     const iri = 'https://example.org';
 

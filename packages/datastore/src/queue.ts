@@ -1,7 +1,7 @@
 import {Connection} from './connection.js';
 import {Registry} from './registry.js';
 import {Database, QueueItem, NewQueueItem} from './types.js';
-import {Kysely} from 'kysely';
+import {Kysely, sql} from 'kysely';
 import {z} from 'zod';
 
 const constructorOptionsSchema = z.object({
@@ -42,9 +42,13 @@ export class Queue {
   }
 
   async push(item: NewQueueItem) {
+    // Update if the item already exists
     return this.db
       .insertInto('queue')
       .values(item)
+      .onConflict(oc =>
+        oc.column('iri').doUpdateSet({updated_at: sql`CURRENT_TIMESTAMP`})
+      )
       .returningAll()
       .executeTakeFirstOrThrow();
   }

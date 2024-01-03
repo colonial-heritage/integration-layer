@@ -4,8 +4,8 @@ import {join} from 'node:path';
 import {rimraf} from 'rimraf';
 import {beforeEach, describe, expect, it} from 'vitest';
 
-const tmpDir = './tmp';
-const dataFile = join(tmpDir, 'connection.sqlite');
+const tmpDir = './tmp/connection';
+const dataFile = join(tmpDir, 'data.sqlite');
 
 beforeEach(async () => {
   await rimraf(tmpDir);

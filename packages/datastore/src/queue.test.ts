@@ -6,8 +6,8 @@ import {setTimeout} from 'node:timers/promises';
 import {rimraf} from 'rimraf';
 import {beforeEach, describe, expect, it} from 'vitest';
 
-const tmpDir = './tmp';
-const dataFile = join(tmpDir, 'queue.sqlite');
+const tmpDir = './tmp/queue';
+const dataFile = join(tmpDir, 'data.sqlite');
 let connection: Connection;
 
 beforeEach(async () => {
@@ -26,42 +26,51 @@ describe('new', () => {
 describe('push', async () => {
   it('pushes an item', async () => {
     const queue = new Queue({connection});
-    const iri = 'https://example.org';
 
-    await queue.push({iri});
+    await queue.push({iri: 'https://example.org'});
 
     const items = await queue.getAll();
 
     expect(items.length).toBe(1);
     expect(items[0]).toMatchObject({
-      iri,
+      iri: 'https://example.org',
       retry_count: 0,
     });
   });
 
   it('pushes an item with a retry count', async () => {
     const queue = new Queue({connection});
-    const iri = 'https://example.org';
 
-    await queue.push({iri, retry_count: 1});
+    await queue.push({iri: 'https://example.org', retry_count: 1});
 
     const items = await queue.getAll();
 
     expect(items.length).toBe(1);
     expect(items[0]).toMatchObject({
-      iri,
+      iri: 'https://example.org',
       retry_count: 1,
     });
+  });
+
+  it('pushes an item with an IRI that already exists', async () => {
+    const queue = new Queue({connection});
+
+    await queue.push({iri: 'https://example.org'});
+    await queue.push({iri: 'https://example.org'});
+
+    const items = await queue.getAll();
+
+    expect(items.length).toBe(1);
+    expect(items[0].iri).toEqual('https://example.org');
   });
 });
 
 describe('retry', async () => {
   it('retries an item', async () => {
     const queue = new Queue({connection});
-    const iri = 'https://example.org/';
 
-    const originalItem = await queue.push({iri});
-    await queue.push({iri});
+    const originalItem = await queue.push({iri: 'https://example.org/1'});
+    await queue.push({iri: 'https://example.org/2'});
 
     await queue.retry(originalItem);
 
@@ -76,9 +85,7 @@ describe('retry', async () => {
     expect.assertions(1);
 
     const queue = new Queue({connection, maxRetryCount: 1});
-    const iri = 'https://example.org/';
-
-    const originalItem = await queue.push({iri});
+    const originalItem = await queue.push({iri: 'https://example.org'});
     const retryItem = await queue.retry(originalItem);
 
     try {
@@ -86,7 +93,7 @@ describe('retry', async () => {
     } catch (err) {
       const error = err as Error;
       expect(error.message).toEqual(
-        'Cannot retry "https://example.org/": max retry count of 1 reached'
+        'Cannot retry "https://example.org": max retry count of 1 reached'
       );
     }
   });
@@ -95,9 +102,8 @@ describe('retry', async () => {
 describe('remove', async () => {
   it('removes an item', async () => {
     const queue = new Queue({connection});
-    const iri = 'https://example.org';
 
-    const item = await queue.push({iri});
+    const item = await queue.push({iri: 'https://example.org'});
 
     await queue.remove(item.id);
 
@@ -110,9 +116,7 @@ describe('remove', async () => {
 describe('processed', async () => {
   it('processes an item', async () => {
     const queue = new Queue({connection});
-    const iri = 'https://example.org';
-
-    const item = await queue.push({iri});
+    const item = await queue.push({iri: 'https://example.org'});
 
     await queue.processed(item);
 
@@ -126,18 +130,17 @@ describe('processed', async () => {
 
     // Added to registry
     expect(registeredItems.length).toBe(1);
-    expect(registeredItems[0].iri).toEqual(iri);
+    expect(registeredItems[0].iri).toEqual('https://example.org');
   });
 });
 
 describe('getAll', async () => {
   it('gets all items, sorted by date of creation', async () => {
     const queue = new Queue({connection});
-    const iri = 'https://example.org';
 
-    await queue.push({iri});
+    await queue.push({iri: 'https://example.org/1'});
     await setTimeout(1000); // To get a different date of creation
-    await queue.push({iri});
+    await queue.push({iri: 'https://example.org/2'});
 
     const items = await queue.getAll();
 
@@ -148,10 +151,9 @@ describe('getAll', async () => {
 
   it('gets a limited number of items', async () => {
     const queue = new Queue({connection});
-    const iri = 'https://example.org';
 
-    await queue.push({iri});
-    await queue.push({iri});
+    await queue.push({iri: 'https://example.org/1'});
+    await queue.push({iri: 'https://example.org/2'});
 
     const items = await queue.getAll({limit: 1});
 
@@ -176,9 +178,8 @@ describe('getAll', async () => {
 describe('size', async () => {
   it('gets the number of items', async () => {
     const queue = new Queue({connection});
-    const iri = 'https://example.org';
 
-    await queue.push({iri});
+    await queue.push({iri: 'https://example.org'});
 
     const size = await queue.size();
 
@@ -187,10 +188,9 @@ describe('size', async () => {
 
   it('gets the number of items belonging to a specific type', async () => {
     const queue = new Queue({connection});
-    const iri = 'https://example.org';
 
-    await queue.push({iri, type: 'type1'});
-    await queue.push({iri});
+    await queue.push({iri: 'https://example.org/1', type: 'type1'});
+    await queue.push({iri: 'https://example.org/2'});
 
     const size = await queue.size({type: 'type1'});
 
