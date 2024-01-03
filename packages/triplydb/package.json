@@ -19,7 +19,7 @@
   "devDependencies": {
     "@colonial-collections/tsconfig": "*",
     "@types/tar": "6.1.10",
-    "pino": "8.16.2"
+    "pino": "8.17.2"
   },
   "tsup": {
     "entry": [
