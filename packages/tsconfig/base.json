@@ -1,0 +1,15 @@
+{
+  "extends": "../../node_modules/gts/tsconfig-google.json",
+  "compilerOptions": {
+    "module": "nodenext",
+    "declarationMap": true,
+    "moduleResolution": "nodenext",
+    "moduleDetection": "force",
+    "target": "es2022",
+    "lib": ["DOM", "DOM.Iterable", "es2022"],
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "strictNullChecks": true
+  }
+}

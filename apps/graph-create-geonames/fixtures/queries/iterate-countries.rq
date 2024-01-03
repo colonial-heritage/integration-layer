@@ -1,0 +1,7 @@
+PREFIX gn: <http://www.geonames.org/ontology#>
+
+SELECT ?this
+WHERE {
+  [] gn:parentCountry ?this .
+}
+GROUP BY ?this

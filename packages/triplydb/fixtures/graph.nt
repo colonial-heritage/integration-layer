@@ -1,0 +1,9 @@
+<http://vocab.getty.edu/aat/300111999> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://vocab.getty.edu/aat/300111999> <http://www.w3.org/2004/02/skos/core#prefLabel> "publications (documents)"@en .
+<http://vocab.getty.edu/aat/300111999> <http://www.w3.org/2004/02/skos/core#prefLabel> "出版品"@zh-hant .
+<http://vocab.getty.edu/aat/300111999> <http://www.w3.org/2004/02/skos/core#prefLabel> "chū bǎn pǐn"@zh-latn-pinyin-x-hanyu .
+<http://vocab.getty.edu/aat/300111999> <http://www.w3.org/2004/02/skos/core#prefLabel> "chu ban pin"@zh-latn-pinyin-x-notone .
+<http://vocab.getty.edu/aat/300111999> <http://www.w3.org/2004/02/skos/core#prefLabel> "ch'u pan p'in"@zh-latn-wadegile .
+<http://vocab.getty.edu/aat/300111999> <http://www.w3.org/2004/02/skos/core#prefLabel> "publicaties"@nl .
+<http://vocab.getty.edu/aat/300111999> <http://www.w3.org/2004/02/skos/core#prefLabel> "Veröffentlichung"@de .
+<http://vocab.getty.edu/aat/300111999> <http://www.w3.org/2004/02/skos/core#prefLabel> "publicaciones"@es .

@@ -1,0 +1,3 @@
+@prefix schema: <https://schema.org/> .
+
+<http://localhost/resource1> a schema:CreativeWork .

@@ -1,0 +1,19 @@
+PREFIX dbo:	<http://dbpedia.org/ontology/>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+
+SELECT ?this
+WHERE {
+  {
+    SELECT ?this
+    WHERE {
+      ?place a dbo:Place ;
+        foaf:name ?name ;
+        owl:sameAs ?this .
+      FILTER(CONTAINS(?name, "Amsterdam") && REGEX(STR(?this), "^http://sws.geonames.org/\\d+/$"))
+    }
+  }
+}
+GROUP BY ?this
+LIMIT ?_limit
+OFFSET ?_offset

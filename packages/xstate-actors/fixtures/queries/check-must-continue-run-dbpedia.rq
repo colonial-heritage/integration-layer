@@ -1,0 +1,13 @@
+PREFIX dbo:	<http://dbpedia.org/ontology/>
+
+SELECT ?identifier ?isChanged
+WHERE {
+  {
+    SELECT (MAX(?revisionId) AS ?identifier)
+    WHERE {
+      [] dbo:wikiPageRevisionID ?revisionId
+    }
+  }
+  BIND(xsd:integer("?_currentIdentifier") AS ?currentIdentifier)
+  BIND(?identifier > ?currentIdentifier AS ?isChanged)
+}

@@ -1,0 +1,30 @@
+{
+  "type": "elasticSearch",
+  "name": "search",
+  "config": {
+    "indexTemplates": [
+      {
+        "name": "index_1",
+        "index_patterns": "index",
+        "composed_of": ["mappings"]
+      }
+    ],
+    "componentTemplates": [
+      {
+        "name": "mappings",
+        "template": {
+          "mappings": {
+            "properties": {
+              "https://colonialcollections nl/schema#yearCreatedStart": {
+                "type": "integer"
+              },
+              "https://colonialcollections nl/schema#yearCreatedEnd": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+}

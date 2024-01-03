@@ -1,0 +1,4 @@
+@prefix ex: <http://example.org/> .
+
+ex:3 a ex:Example ;
+  ex:feature ex:b .

@@ -1,0 +1,37 @@
+{
+  "name": "@colonial-collections/graph-create-geonames",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "exports": "./dist/cli.js",
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest --coverage",
+    "test:once": "vitest --run"
+  },
+  "dependencies": {
+    "@colonial-collections/common": "*",
+    "@colonial-collections/datastore": "*",
+    "@colonial-collections/sparql-file-iterator": "*",
+    "@colonial-collections/dereference-storer": "*",
+    "@colonial-collections/xstate-actors": "*",
+    "cac": "6.7.14",
+    "fastq": "1.15.0",
+    "xstate": "5.3.1",
+    "zod": "3.22.4"
+  },
+  "devDependencies": {
+    "@colonial-collections/tsconfig": "*"
+  },
+  "tsup": {
+    "entry": [
+      "src/cli.ts"
+    ],
+    "format": "esm",
+    "splitting": false,
+    "sourcemap": false,
+    "clean": true,
+    "dts": true
+  }
+}

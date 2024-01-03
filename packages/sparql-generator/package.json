@@ -1,0 +1,33 @@
+{
+  "name": "@colonial-collections/sparql-generator",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "exports": "./dist/index.js",
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest --coverage",
+    "test:once": "vitest --run"
+  },
+  "dependencies": {
+    "fetch-sparql-endpoint": "4.1.0",
+    "p-retry": "6.1.0",
+    "zod": "3.22.4"
+  },
+  "devDependencies": {
+    "@colonial-collections/tsconfig": "*",
+    "get-stream": "8.0.1",
+    "rdf-serialize": "2.2.2"
+  },
+  "tsup": {
+    "entry": [
+      "src/index.ts"
+    ],
+    "format": "esm",
+    "splitting": false,
+    "sourcemap": false,
+    "clean": true,
+    "dts": true
+  }
+}

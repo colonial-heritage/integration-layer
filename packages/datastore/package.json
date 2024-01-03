@@ -1,0 +1,34 @@
+{
+  "name": "@colonial-collections/datastore",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "exports": "./dist/index.js",
+  "scripts": {
+    "build": "tsup",
+    "pretest": "npm run build && cp -r ./dist/migrations/*.js ./src/migrations",
+    "test": "vitest --coverage",
+    "posttest": "rm -rf ./src/migrations/*.js",
+    "test:once": "npm run build && cp -r ./dist/migrations/*.js ./src/migrations && vitest --run && rm -rf ./src/migrations/*.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "9.2.2",
+    "kysely": "0.26.3",
+    "zod": "3.22.4"
+  },
+  "devDependencies": {
+    "@colonial-collections/tsconfig": "*",
+    "@types/better-sqlite3": "7.6.8"
+  },
+  "tsup": {
+    "entry": [
+      "src/index.ts", "src/migrations"
+    ],
+    "format": "esm",
+    "splitting": false,
+    "sourcemap": false,
+    "clean": true,
+    "dts": true
+  }
+}

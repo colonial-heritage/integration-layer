@@ -1,0 +1,37 @@
+{
+  "name": "@colonial-collections/graph-create",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "exports": "./dist/cli.js",
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest --coverage",
+    "test:once": "vitest --run"
+  },
+  "dependencies": {
+    "@colonial-collections/common": "*",
+    "@colonial-collections/datastore": "*",
+    "@colonial-collections/sparql-change-checker": "*",
+    "@colonial-collections/sparql-storer": "*",
+    "@colonial-collections/xstate-actors": "*",
+    "cac": "6.7.14",
+    "xstate": "5.3.1",
+    "zod": "3.22.4"
+  },
+  "devDependencies": {
+    "@colonial-collections/tsconfig": "*",
+    "pino": "8.16.2"
+  },
+  "tsup": {
+    "entry": [
+      "src/cli.ts"
+    ],
+    "format": "esm",
+    "splitting": false,
+    "sourcemap": false,
+    "clean": true,
+    "dts": true
+  }
+}

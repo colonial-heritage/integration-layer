@@ -1,0 +1,13 @@
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+
+CONSTRUCT {
+  ?this a skos:Concept ;
+    skos:prefLabel ?prefLabel ;
+    skos:altLabel ?altLabel .
+}
+WHERE {
+  BIND(?_iri AS ?this)
+  ?this a skos:Concept ;
+    skos:prefLabel ?prefLabel .
+  OPTIONAL { ?this skos:altLabel ?altlabel }
+}

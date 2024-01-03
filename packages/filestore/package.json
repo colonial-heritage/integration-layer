@@ -1,0 +1,33 @@
+{
+  "name": "@colonial-collections/filestore",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "exports": "./dist/index.js",
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest --coverage",
+    "test:once": "vitest --run"
+  },
+  "dependencies": {
+    "glob": "10.3.10",
+    "rdf-serialize": "2.2.2",
+    "zod": "3.22.4"
+  },
+  "devDependencies": {
+    "@colonial-collections/tsconfig": "*",
+    "@rdfjs/types": "1.1.0",
+    "rdf-dereference": "2.2.0"
+  },
+  "tsup": {
+    "entry": [
+      "src/index.ts"
+    ],
+    "format": "esm",
+    "splitting": false,
+    "sourcemap": false,
+    "clean": true,
+    "dts": true
+  }
+}

@@ -1,0 +1,11 @@
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX schema: <https://schema.org/>
+
+CONSTRUCT {
+  ?this a schema:Person ;
+    schema:name ?name .
+}
+WHERE {
+  BIND(?_iri AS ?this)
+  ?this foaf:name ?name .
+}
