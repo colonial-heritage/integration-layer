@@ -78,13 +78,19 @@ export class SparqlChangeChecker extends EventEmitter {
       },
     });
 
-    let identifier;
+    let identifier: string | undefined;
     let isChanged = false;
 
     for await (const rawBindings of bindingsStream) {
       const bindings = rawBindings as unknown as IBindings; // TS assumes it's a string or Buffer
-      identifier = bindings.identifier.value;
-      isChanged = parseInt(bindings.isChanged.value) !== 0;
+      identifier =
+        bindings.identifier !== undefined
+          ? bindings.identifier.value.toString()
+          : undefined;
+      isChanged =
+        bindings.isChanged !== undefined
+          ? parseInt(bindings.isChanged.value) !== 0
+          : false;
     }
 
     const response: RunResponse = {identifier, isChanged};
