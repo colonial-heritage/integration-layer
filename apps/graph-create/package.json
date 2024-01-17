@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@colonial-collections/tsconfig": "*",
-    "pino": "8.16.2"
+    "pino": "8.17.2"
   },
   "tsup": {
     "entry": [
