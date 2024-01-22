@@ -11,7 +11,7 @@
     "test:once": "vitest --run"
   },
   "dependencies": {
-    "@comunica/query-sparql-file": "2.10.1",
+    "@comunica/query-sparql-file": "2.10.2",
     "fastq": "1.15.0",
     "glob": "10.3.10",
     "zod": "3.22.4"
