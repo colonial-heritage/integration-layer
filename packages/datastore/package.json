@@ -13,7 +13,7 @@
     "test:once": "npm run build && cp -r ./dist/migrations/*.js ./src/migrations && vitest --run && rm -rf ./src/migrations/*.js"
   },
   "dependencies": {
-    "better-sqlite3": "9.2.2",
+    "better-sqlite3": "9.3.0",
     "kysely": "0.26.3",
     "zod": "3.22.4"
   },
