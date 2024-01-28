@@ -61,33 +61,6 @@ describe('deleteByIri', () => {
   });
 });
 
-describe('deleteIfMatches', () => {
-  it('deletes resources that match the condition', async () => {
-    const iri1 = 'http://localhost/resource1';
-    const iri2 = 'http://localhost/resource2';
-
-    const quadStream1 = await getQuadStreamFromFile('./fixtures/resource.ttl');
-    const quadStream2 = await getQuadStreamFromFile('./fixtures/resource.ttl');
-
-    await filestore.save({iri: iri1, quadStream: quadStream1});
-    await filestore.save({iri: iri2, quadStream: quadStream2});
-
-    const hashesOfIrisThatMustBeDeleted = [filestore.createHashFromIri(iri1)];
-    const matchFn = async (hashOfIri: string) =>
-      hashesOfIrisThatMustBeDeleted.includes(hashOfIri);
-
-    const deleteCount = await filestore.deleteIfMatches(matchFn);
-
-    expect(deleteCount).toBe(1);
-
-    const pathOfIri1 = filestore.createPathFromIri(iri1);
-    expect(existsSync(pathOfIri1)).toBe(false);
-
-    const pathOfIri2 = filestore.createPathFromIri(iri2);
-    expect(existsSync(pathOfIri2)).toBe(true);
-  });
-});
-
 describe('save', () => {
   const iri = 'http://localhost/resource';
 

@@ -1,8 +1,7 @@
 import {md5} from './md5.js';
-import {globStream} from 'glob';
 import {createWriteStream} from 'node:fs';
 import {mkdir, stat, unlink} from 'node:fs/promises';
-import {basename, dirname, join, resolve} from 'node:path';
+import {dirname, join, resolve} from 'node:path';
 import {pipeline} from 'node:stream/promises';
 import {Stream} from '@rdfjs/types';
 import rdfSerializer from 'rdf-serialize';
@@ -19,13 +18,6 @@ export type ConstructorOptions = z.input<typeof constructorOptionsSchema>;
 
 const iriSchema = z.string().url();
 const pathSchema = z.string();
-const matchFnSchema = z.function();
-
-const deleteOptionsSchema = z.object({
-  iri: z.string().url(),
-});
-
-export type DeleteOptions = z.infer<typeof deleteOptionsSchema>;
 
 const saveOptionsSchema = z.object({
   iri: z.string().url(),
@@ -92,30 +84,6 @@ export class Filestore {
     const path = this.createPathFromIri(iri);
 
     return this.deleteByPath(path);
-  }
-
-  async deleteIfMatches(matchFn: (hashOfIri: string) => Promise<boolean>) {
-    matchFnSchema.parse(matchFn);
-
-    const filesStream = globStream(
-      `${this.dir}/**/*${Filestore.fileExtension}`,
-      {
-        nodir: true,
-        absolute: true,
-      }
-    );
-
-    let deleteCount = 0;
-    for await (const path of filesStream) {
-      const hashOfIri = basename(path, Filestore.fileExtension);
-      const isMatch = await matchFn(hashOfIri);
-      if (isMatch) {
-        await this.deleteByPath(path);
-        deleteCount++;
-      }
-    }
-
-    return deleteCount;
   }
 
   async save(options: SaveOptions) {
