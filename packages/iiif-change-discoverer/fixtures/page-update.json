@@ -1,0 +1,29 @@
+{
+  "@context": "http://iiif.io/api/discovery/1/context.json",
+  "id": "http://localhost/page-update.json",
+  "type": "OrderedCollectionPage",
+  "prev": {
+    "id": "http://localhost/page-add.json",
+    "type": "OrderedCollectionPage"
+  },
+  "next": {
+    "id": "http://localhost/page-delete.json",
+    "type": "OrderedCollectionPage"
+  },
+  "orderedItems": [
+    {
+      "type": "Update",
+      "object": {
+        "id": "http://localhost/resource1.json"
+      },
+      "endTime": "2018-03-10T10:00:00Z"
+    },
+    {
+      "type": "Update",
+      "object": {
+        "id": "http://localhost/resource1.json"
+      },
+      "endTime": "2018-04-10T10:00:00Z"
+    }
+  ]
+}

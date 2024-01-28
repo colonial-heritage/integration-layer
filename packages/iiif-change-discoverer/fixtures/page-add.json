@@ -1,0 +1,21 @@
+{
+  "@context": "http://iiif.io/api/discovery/1/context.json",
+  "id": "http://localhost/page-add.json",
+  "type": "OrderedCollectionPage",
+  "next": {
+    "id": "http://localhost/page-update.json",
+    "type": "OrderedCollectionPage"
+  },
+  "orderedItems": [
+    {
+      "type": "Add",
+      "object": {
+        "id": "http://localhost/resource1.json"
+      },
+      "target": {
+        "id": "http://localhost/collection-add.json"
+      },
+      "endTime": "2017-03-10T10:00:00Z"
+    }
+  ]
+}

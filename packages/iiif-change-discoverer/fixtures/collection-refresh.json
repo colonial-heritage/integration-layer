@@ -1,0 +1,13 @@
+{
+  "@context": "http://iiif.io/api/discovery/1/context.json",
+  "id": "http://localhost/collection-refresh.json",
+  "type": "OrderedCollection",
+  "first": {
+    "id": "http://localhost/page-add.json",
+    "type": "OrderedCollectionPage"
+  },
+  "last": {
+    "id": "http://localhost/page-refresh.json",
+    "type": "OrderedCollectionPage"
+  }
+}

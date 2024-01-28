@@ -1,0 +1,21 @@
+{
+  "@context": "http://iiif.io/api/discovery/1/context.json",
+  "id": "http://localhost/page-remove.json",
+  "type": "OrderedCollectionPage",
+  "prev": {
+    "id": "http://localhost/page-move.json",
+    "type": "OrderedCollectionPage"
+  },
+  "orderedItems": [
+    {
+      "type": "Remove",
+      "object": {
+        "id": "http://localhost/resource3.json"
+      },
+      "origin": {
+        "id": "http://localhost/collection-remove.json"
+      },
+      "endTime": "2019-03-10T10:00:00Z"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "@context": "http://iiif.io/api/discovery/1/context.json",
+  "id": "http://localhost/collection-create.json",
+  "type": "OrderedCollection",
+  "last": {
+    "id": "http://localhost/page-create.json",
+    "type": "OrderedCollectionPage"
+  }
+}
