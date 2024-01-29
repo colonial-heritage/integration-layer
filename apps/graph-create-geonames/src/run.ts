@@ -1,4 +1,3 @@
-import {dereference} from './dereference.js';
 import {fileIterate} from './file-iterate.js';
 import {getLogger} from '@colonial-collections/common';
 import {
@@ -9,6 +8,7 @@ import {
 } from '@colonial-collections/datastore';
 import {
   checkQueue,
+  dereference,
   finalize,
   iterate,
   registerRun,

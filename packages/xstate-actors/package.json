@@ -11,8 +11,10 @@
     "test:once": "vitest --run"
   },
   "dependencies": {
+    "@colonial-collections/common": "*",
     "@colonial-collections/filestore": "*",
     "@colonial-collections/datastore": "*",
+    "@colonial-collections/dereference-storer": "*",
     "@colonial-collections/sparql-change-checker": "*",
     "@colonial-collections/sparql-iterator": "*",
     "@colonial-collections/triplydb": "*",
