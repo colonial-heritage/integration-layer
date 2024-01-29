@@ -3,7 +3,7 @@
   "id": "http://localhost/page-remove.json",
   "type": "OrderedCollectionPage",
   "prev": {
-    "id": "http://localhost/page-move.json",
+    "id": "http://localhost/page-add.json",
     "type": "OrderedCollectionPage"
   },
   "orderedItems": [

@@ -12,7 +12,9 @@ export const constructorOptionsSchema = z.object({
   timeoutPerRequest: z.number().min(0).default(60000),
   numberOfIrisPerRequest: z.number().min(1).default(1000),
   query: z.string(),
-  queue: z.any(),
+  queue: z.any().refine(val => val !== undefined, {
+    message: 'queue must be defined',
+  }),
 });
 
 export type ConstructorOptions = z.input<typeof constructorOptionsSchema>;

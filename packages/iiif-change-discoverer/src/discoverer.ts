@@ -1,3 +1,4 @@
+import {type queueAsPromised} from 'fastq';
 import got, {Got} from 'got';
 import {EventEmitter} from 'node:events';
 import {setTimeout} from 'node:timers/promises';
@@ -14,6 +15,9 @@ const constructorOptionsSchema = z.object({
       password: z.string(),
     })
     .optional(),
+  queue: z.any().refine(val => val !== undefined, {
+    message: 'queue must be defined',
+  }),
 });
 
 export type ConstructorOptions = z.input<typeof constructorOptionsSchema>;
@@ -88,12 +92,13 @@ const pageResponseSchema = z.object({
 });
 
 export class ChangeDiscoverer extends EventEmitter {
-  private collectionIri: string;
-  private dateLastRun?: Date;
-  private waitBetweenRequests: number;
-  private processablePages: string[] = [];
-  private processedItems: Set<string> = new Set();
-  private httpClient: Got;
+  private readonly collectionIri: string;
+  private readonly dateLastRun?: Date;
+  private readonly waitBetweenRequests: number;
+  private readonly processablePages: string[] = [];
+  private readonly processedItems: Set<string> = new Set();
+  private readonly httpClient: Got;
+  private readonly queue: queueAsPromised<Record<string, string>>;
 
   constructor(options: ConstructorOptions) {
     super();
@@ -112,6 +117,18 @@ export class ChangeDiscoverer extends EventEmitter {
     }
 
     this.httpClient = got.extend(requestOptions);
+    this.queue = opts.queue;
+  }
+
+  private async pushToQueue(iri: string, type: string) {
+    // Use a queue to have more control compared to an event emit() - https://www.youtube.com/watch?v=Ra7Ji9LmG9o
+    this.queue.push({iri, type}).catch(err => {
+      const prettyError = new Error(
+        `An error occurred when pushing "${type}" event for "${iri}" to queue: ${err.message}`
+      );
+      prettyError.stack = err.stack;
+      this.emit('error', prettyError);
+    });
   }
 
   // https://iiif.io/api/discovery/1.0/#page-algorithm
@@ -159,14 +176,14 @@ export class ChangeDiscoverer extends EventEmitter {
 
       // Step 5a
       if (activity.type === 'Delete') {
-        this.emit('delete', activity.object.id);
+        await this.pushToQueue(activity.object.id, 'delete');
       }
 
       // Step 5b
       if (activity.type === 'Remove') {
         const originId = activity.origin.id;
         if (originId === this.collectionIri) {
-          this.emit('remove', activity.object.id);
+          await this.pushToQueue(activity.object.id, 'remove');
         }
       }
 
@@ -178,29 +195,30 @@ export class ChangeDiscoverer extends EventEmitter {
 
       // Step 7a
       if (activity.type === 'Create') {
-        this.emit('create', activity.object.id);
+        await this.pushToQueue(activity.object.id, 'create');
       }
 
       // Step 7b
       if (activity.type === 'Update') {
-        this.emit('update', activity.object.id);
+        await this.pushToQueue(activity.object.id, 'update');
       }
 
       // Step 7c
       if (activity.type === 'Add') {
         const targetId = activity.target.id;
         if (targetId === this.collectionIri) {
-          this.emit('add', activity.object.id);
+          await this.pushToQueue(activity.object.id, 'add');
         }
       }
 
       // Step 8
       if (activity.type === 'Move') {
-        this.emit('move-delete', activity.object.id);
-        this.emit('move-create', activity.target.id);
+        await this.pushToQueue(activity.object.id, 'move-delete');
+        await this.pushToQueue(activity.target.id, 'move-create');
       }
 
       // Step 9
+      // Beware: this list consumes a lot of memory for large activity streams
       if (activity.type !== 'Refresh') {
         this.processedItems.add(activity.object.id);
       }
