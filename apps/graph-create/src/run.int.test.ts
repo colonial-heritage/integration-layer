@@ -195,6 +195,8 @@ describe('run', () => {
       triplydbServiceType,
       graphName,
     });
+
+    expect(await queue.size()).toBe(1);
   });
 
   it('generates a resource if queue contains a resource and uploads to data platform because queue is now empty (states 1a, 1b, 5a, 5b, 5c, 5d, 6)', async () => {

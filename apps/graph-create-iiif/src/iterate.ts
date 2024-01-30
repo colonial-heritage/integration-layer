@@ -12,7 +12,7 @@ const inputSchema = z.object({
     message: 'logger must be defined',
   }),
   queue: z.instanceof(Queue),
-  dateLastRun: z.date().optional(), // Not set if no run ran before
+  dateLastRun: z.coerce.date().optional(), // Not set if no run ran before
   collectionIri: z.string(),
   credentials: z
     .object({

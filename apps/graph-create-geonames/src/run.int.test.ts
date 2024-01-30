@@ -219,6 +219,7 @@ describe('run', () => {
     const pathOfIri = filestore.createPathFromIri(iri1);
 
     expect(existsSync(pathOfIri)).toBe(true);
+    expect(await queue.size()).toBe(1);
   });
 });
 
@@ -320,6 +321,7 @@ describe('run', () => {
     const pathOfIri = filestore.createPathFromIri(iri1);
 
     expect(existsSync(pathOfIri)).toBe(true);
+    expect(await queue.size()).toBe(1);
   });
 
   it('dereferences a country if queue contains a country and uploads to data platform because queue does not contain countries anymore (states 1a, 1b, 1c, 7a, 7b, 7c, 7d, 8)', async () => {

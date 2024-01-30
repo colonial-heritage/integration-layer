@@ -160,7 +160,7 @@ export async function run(input: Input) {
             credentials: context.iterateCredentials,
             waitBetweenRequests: context.iterateWaitBetweenRequests,
           }),
-          onDone: 'finalize', // TODO: add option to deref immediately OR on the next run
+          onDone: 'finalize', // TODO: add option to dereference immediately instead of on the next run
         },
       },
       // State 6

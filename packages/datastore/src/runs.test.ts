@@ -36,6 +36,27 @@ describe('save', async () => {
     expect(allRuns[0].id).toEqual(run.id);
   });
 
+  it('saves a run with additional information', async () => {
+    const runs = new Runs({connection});
+
+    const run = await runs.save({
+      identifier: 'testId',
+      created_at: '2024-01-01',
+    });
+
+    const allRuns = await connection.db
+      .selectFrom('runs')
+      .selectAll()
+      .execute();
+
+    expect(allRuns.length).toBe(1);
+    expect(allRuns[0]).toMatchObject({
+      id: run.id,
+      identifier: 'testId',
+      created_at: '2024-01-01',
+    });
+  });
+
   it('saves a run, removing existing runs', async () => {
     const runs = new Runs({connection});
 

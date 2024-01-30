@@ -25,9 +25,14 @@ export class Runs {
   async save(item?: NewRunItem) {
     await this.removeAll(); // Remove previous runs, if any
 
+    const values =
+      item !== undefined
+        ? Object.assign({identifier: ''}, item)
+        : {identifier: ''};
+
     return this.db
       .insertInto('runs')
-      .values(item || {identifier: ''})
+      .values(values)
       .returningAll()
       .executeTakeFirstOrThrow();
   }
