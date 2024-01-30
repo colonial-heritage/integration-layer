@@ -7,8 +7,8 @@ import {
   Runs,
 } from '@colonial-collections/datastore';
 import {
-  checkQueue,
   finalize,
+  getQueueSize,
   iterate,
   registerRun,
   registerRunAndCheckIfRunMustContinue,
@@ -92,9 +92,9 @@ export async function run(input: Input) {
       };
     },
     actors: {
-      checkQueue,
       finalize,
       generate,
+      getQueueSize,
       iterate,
       registerRun,
       registerRunAndCheckIfRunMustContinue,
@@ -103,7 +103,7 @@ export async function run(input: Input) {
     },
   }).createMachine({
     id: 'main',
-    initial: 'checkQueue',
+    initial: 'getQueueSize',
     context: ({input}) => ({
       ...input,
       startTime: Date.now(),
@@ -116,10 +116,10 @@ export async function run(input: Input) {
     }),
     states: {
       // State 1a
-      checkQueue: {
+      getQueueSize: {
         invoke: {
-          id: 'checkQueue',
-          src: 'checkQueue',
+          id: 'getQueueSize',
+          src: 'getQueueSize',
           input: ({context}) => context,
           onDone: {
             target: 'evaluateQueue',
@@ -237,14 +237,14 @@ export async function run(input: Input) {
                   context.generateNumberOfConcurrentRequests,
                 batchSize: context.generateBatchSize,
               }),
-              onDone: 'checkQueue',
+              onDone: 'getQueueSize',
             },
           },
           // State 5b
-          checkQueue: {
+          getQueueSize: {
             invoke: {
-              id: 'checkQueue',
-              src: 'checkQueue',
+              id: 'getQueueSize',
+              src: 'getQueueSize',
               input: ({context}) => context,
               onDone: {
                 target: 'evaluateQueue',

@@ -7,9 +7,9 @@ import {
   Runs,
 } from '@colonial-collections/datastore';
 import {
-  checkQueue,
   dereference,
   finalize,
+  getQueueSize,
   iterate,
   registerRun,
   registerRunAndCheckIfRunMustContinue,
@@ -113,10 +113,10 @@ export async function run(input: Input) {
       };
     },
     actors: {
-      checkQueue,
       dereference,
       fileIterate,
       finalize,
+      getQueueSize,
       iterate,
       registerRun,
       registerRunAndCheckIfRunMustContinue,
@@ -125,7 +125,7 @@ export async function run(input: Input) {
     },
   }).createMachine({
     id: 'main',
-    initial: 'checkLocationsQueue',
+    initial: 'getLocationsQueueSize',
     context: ({input}) => ({
       ...input,
       startTime: Date.now(),
@@ -141,16 +141,16 @@ export async function run(input: Input) {
     }),
     states: {
       // State 1a
-      checkLocationsQueue: {
+      getLocationsQueueSize: {
         invoke: {
           id: 'checkLocationsQueue',
-          src: 'checkQueue',
+          src: 'getQueueSize',
           input: ({context}) => ({
             queue: context.queue,
             type: 'locations',
           }),
           onDone: {
-            target: 'checkCountriesQueue',
+            target: 'getCountriesQueueSize',
             actions: assign({
               locationsQueueSize: ({event}) => event.output,
             }),
@@ -158,10 +158,10 @@ export async function run(input: Input) {
         },
       },
       // State 1b
-      checkCountriesQueue: {
+      getCountriesQueueSize: {
         invoke: {
-          id: 'checkCountriesQueue',
-          src: 'checkQueue',
+          id: 'getCountriesQueueSize',
+          src: 'getQueueSize',
           input: ({context}) => ({
             queue: context.queue,
             type: 'countries',
@@ -309,7 +309,7 @@ export async function run(input: Input) {
           checkLocationsQueue: {
             invoke: {
               id: 'checkLocationsQueue',
-              src: 'checkQueue',
+              src: 'getQueueSize',
               input: ({context}) => ({
                 queue: context.queue,
                 type: 'locations',
@@ -400,7 +400,7 @@ export async function run(input: Input) {
           checkCountriesQueue: {
             invoke: {
               id: 'checkCountriesQueue',
-              src: 'checkQueue',
+              src: 'getQueueSize',
               input: ({context}) => ({
                 queue: context.queue,
                 type: 'countries',

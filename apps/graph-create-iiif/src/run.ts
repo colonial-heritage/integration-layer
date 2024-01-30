@@ -8,10 +8,10 @@ import {
   RunItem,
 } from '@colonial-collections/datastore';
 import {
-  checkQueue,
   dereference,
   finalize,
   getLastRun,
+  getQueueSize,
   registerRun,
 } from '@colonial-collections/xstate-actors';
 import type {pino} from 'pino';
@@ -78,16 +78,16 @@ export async function run(input: Input) {
       };
     },
     actors: {
-      checkQueue,
       dereference,
       finalize,
       getLastRun,
+      getQueueSize,
       iterate,
       registerRun,
     },
   }).createMachine({
     id: 'main',
-    initial: 'checkQueue',
+    initial: 'getQueueSize',
     context: ({input}) => ({
       ...input,
       startTime: Date.now(),
@@ -100,10 +100,10 @@ export async function run(input: Input) {
     }),
     states: {
       // State 1
-      checkQueue: {
+      getQueueSize: {
         invoke: {
-          id: 'checkQueue',
-          src: 'checkQueue',
+          id: 'getQueueSize',
+          src: 'getQueueSize',
           input: ({context}) => context,
           onDone: {
             target: 'evaluateQueue',

@@ -7,10 +7,10 @@ const inputSchema = z.object({
   type: z.string().optional(),
 });
 
-export type CheckQueueInput = z.input<typeof inputSchema>;
+export type GetQueueSizeInput = z.input<typeof inputSchema>;
 
-export const checkQueue = fromPromise(
-  async ({input}: {input: CheckQueueInput}) => {
+export const getQueueSize = fromPromise(
+  async ({input}: {input: GetQueueSizeInput}) => {
     const opts = inputSchema.parse(input);
 
     return opts.queue.size({type: opts.type});
