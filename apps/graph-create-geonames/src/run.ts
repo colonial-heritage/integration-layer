@@ -67,6 +67,8 @@ export async function run(input: Input) {
 
   /*
     High-level workflow:
+    Get size of locations queue
+    Get size of countries queue
     If locations queue is empty and countries queue is empty and a 'must run continue' query file is set: (start a new run)
       Register run
       Check if run must continue

@@ -217,7 +217,7 @@ describe('run - step 3', () => {
 });
 
 describe('run - step 5', () => {
-  it('pushes a delete event to the queue if a Delete activity is found', async () => {
+  it('pushes a delete record to the queue if a Delete activity is found', async () => {
     expect.assertions(1);
 
     const savedEvents: string[] = [];
@@ -239,7 +239,7 @@ describe('run - step 5', () => {
 });
 
 describe('run - step 5', () => {
-  it('pushes a remove event to the queue if a Remove activity is found', async () => {
+  it('pushes a remove record to the queue if a Remove activity is found', async () => {
     expect.assertions(1);
 
     const savedEvents: string[] = [];
@@ -279,7 +279,7 @@ describe('run - step 6', () => {
     expect(onlyDeleteEventHasBeenEmitted).toBe(true);
   });
 
-  it('pushes only a delete event to the queue if a Refresh activity is found and the discoverer has run before', async () => {
+  it('pushes only a delete record to the queue if a Refresh activity is found and the discoverer has run before', async () => {
     const savedEvents: string[] = [];
     const save = async (iri: string) => savedEvents.push(iri);
     const queue = fastq.promise(save, 1);
@@ -299,7 +299,7 @@ describe('run - step 6', () => {
 });
 
 describe('run - step 7', () => {
-  it('pushes a create event to the queue if a Create activity is found', async () => {
+  it('pushes a create record to the queue if a Create activity is found', async () => {
     const savedEvents: string[] = [];
     const save = async (iri: string) => savedEvents.push(iri);
     const queue = fastq.promise(save, 1);
@@ -319,7 +319,7 @@ describe('run - step 7', () => {
 });
 
 describe('run - step 7', () => {
-  it('pushes an update event to the queue if an Update activity is found', async () => {
+  it('pushes an update record to the queue if an Update activity is found', async () => {
     const savedEvents: string[] = [];
     const save = async (iri: string) => savedEvents.push(iri);
     const queue = fastq.promise(save, 1);
@@ -339,7 +339,7 @@ describe('run - step 7', () => {
 });
 
 describe('run - step 7', () => {
-  it('pushes an add event to the queue if an Add activity is found', async () => {
+  it('pushes an add record to the queue if an Add activity is found', async () => {
     const savedEvents: string[] = [];
     const save = async (iri: string) => savedEvents.push(iri);
     const queue = fastq.promise(save, 1);
@@ -359,7 +359,7 @@ describe('run - step 7', () => {
 });
 
 describe('run - step 8', () => {
-  it('pushes move events to the queue if a Move activity is found', async () => {
+  it('pushes move records to the queue if a Move activity is found', async () => {
     const savedEvents: string[] = [];
     const save = async (iri: string) => savedEvents.push(iri);
     const queue = fastq.promise(save, 1);

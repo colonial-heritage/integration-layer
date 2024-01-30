@@ -1,9 +1,11 @@
 import {
+  GetLastRunInput,
   RegisterRunAndCheckIfRunMustContinueInput,
   RegisterRunInput,
+  getLastRun,
   registerRun,
   registerRunAndCheckIfRunMustContinue,
-} from './register-run.js';
+} from './run.js';
 import {Connection, Runs} from '@colonial-collections/datastore';
 import {join} from 'node:path';
 import {rimraf} from 'rimraf';
@@ -21,14 +23,37 @@ beforeEach(async () => {
   connection = await Connection.new({path: dataFile});
 });
 
+describe('getLastRun', () => {
+  it('returns undefined if there is no last run', async () => {
+    const runs = new Runs({connection});
+
+    const input: GetLastRunInput = {logger, runs};
+
+    const lastRun = await toPromise(createActor(getLastRun, {input}).start());
+
+    expect(lastRun).toBeUndefined();
+  });
+
+  it('returns the last run', async () => {
+    const runs = new Runs({connection});
+    await runs.save({identifier: 'randomId'});
+
+    const input: GetLastRunInput = {logger, runs};
+
+    const lastRun = await toPromise(createActor(getLastRun, {input}).start());
+
+    expect(lastRun).toMatchObject({
+      id: 1,
+      identifier: 'randomId',
+    });
+  });
+});
+
 describe('registerRun', () => {
   it('returns true if the run has been registered', async () => {
     const runs = new Runs({connection});
 
-    const input: RegisterRunInput = {
-      logger,
-      runs,
-    };
+    const input: RegisterRunInput = {logger, runs};
 
     const continueRun = await toPromise(
       createActor(registerRun, {input}).start()

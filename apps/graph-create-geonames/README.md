@@ -1,6 +1,6 @@
 # Graph create GeoNames
 
-Creates or updates a graph by dereferencing GeoNames IRIs
+Creates a graph by dereferencing GeoNames IRIs
 
 ## Testing
 

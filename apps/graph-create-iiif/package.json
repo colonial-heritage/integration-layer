@@ -1,25 +1,22 @@
 {
-  "name": "@colonial-collections/xstate-actors",
+  "name": "@colonial-collections/graph-create-iiif",
   "version": "1.0.0",
   "type": "module",
   "private": true,
   "license": "MIT",
-  "exports": "./dist/index.js",
+  "exports": "./dist/cli.js",
   "scripts": {
     "build": "tsup",
     "test": "vitest --coverage",
-    "test:once": "vitest --run"
+    "test:once": "vitest --run --passWithNoTests"
   },
   "dependencies": {
     "@colonial-collections/common": "*",
     "@colonial-collections/datastore": "*",
-    "@colonial-collections/filestore": "*",
-    "@colonial-collections/dereference-storer": "*",
-    "@colonial-collections/sparql-change-checker": "*",
-    "@colonial-collections/sparql-iterator": "*",
-    "@colonial-collections/triplydb": "*",
+    "@colonial-collections/iiif-change-discoverer": "*",
+    "@colonial-collections/xstate-actors": "*",
+    "cac": "6.7.14",
     "fastq": "1.15.0",
-    "pretty-ms": "8.0.0",
     "xstate": "5.3.1",
     "zod": "3.22.4"
   },
@@ -29,7 +26,7 @@
   },
   "tsup": {
     "entry": [
-      "src/index.ts"
+      "src/cli.ts"
     ],
     "format": "esm",
     "splitting": false,

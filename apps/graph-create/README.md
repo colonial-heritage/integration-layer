@@ -1,6 +1,6 @@
 # Graph create
 
-Creates or updates a graph by querying a SPARQL endpoint
+Creates a graph by querying a SPARQL endpoint
 
 ## Testing
 

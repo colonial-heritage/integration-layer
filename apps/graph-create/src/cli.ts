@@ -6,7 +6,7 @@ import type {Input} from './run.js';
 const cli = cac();
 
 cli
-  .command('create', 'Create or update a graph by querying a SPARQL endpoint')
+  .command('create', 'Create a graph by querying a SPARQL endpoint')
   .option('--resource-dir <string>', 'Directory for storing RDF resources')
   .option('--data-file <string>', 'File with data')
   .option('--check-endpoint-url <string>', 'SPARQL endpoint URL')

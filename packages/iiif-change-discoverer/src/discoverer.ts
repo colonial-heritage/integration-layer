@@ -91,6 +91,11 @@ const pageResponseSchema = z.object({
   ),
 });
 
+export type QueueRecord = {
+  iri: string;
+  type: string;
+};
+
 export class ChangeDiscoverer extends EventEmitter {
   private readonly collectionIri: string;
   private readonly dateLastRun?: Date;
@@ -98,7 +103,7 @@ export class ChangeDiscoverer extends EventEmitter {
   private readonly processablePages: string[] = [];
   private readonly processedItems: Set<string> = new Set();
   private readonly httpClient: Got;
-  private readonly queue: queueAsPromised<Record<string, string>>;
+  private readonly queue: queueAsPromised<QueueRecord>;
 
   constructor(options: ConstructorOptions) {
     super();

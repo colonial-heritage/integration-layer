@@ -38,16 +38,21 @@ describe('push', async () => {
     });
   });
 
-  it('pushes an item with a retry count', async () => {
+  it('pushes an item with additional information', async () => {
     const queue = new Queue({connection});
 
-    await queue.push({iri: 'https://example.org', retry_count: 1});
+    await queue.push({
+      iri: 'https://example.org',
+      type: 'type1',
+      retry_count: 1,
+    });
 
     const items = await queue.getAll();
 
     expect(items.length).toBe(1);
     expect(items[0]).toMatchObject({
       iri: 'https://example.org',
+      type: 'type1',
       retry_count: 1,
     });
   });
@@ -69,7 +74,10 @@ describe('retry', async () => {
   it('retries an item', async () => {
     const queue = new Queue({connection});
 
-    const originalItem = await queue.push({iri: 'https://example.org/1'});
+    const originalItem = await queue.push({
+      iri: 'https://example.org/1',
+      type: 'type1',
+    });
     await queue.push({iri: 'https://example.org/2'});
 
     await queue.retry(originalItem);
@@ -77,8 +85,18 @@ describe('retry', async () => {
     const items = await queue.getAll();
 
     expect(items.length).toBe(2);
-    expect(items[0].retry_count).toEqual(0);
-    expect(items[1].retry_count).toEqual(1);
+    expect(items[0]).toMatchObject({
+      id: 2,
+      iri: 'https://example.org/2',
+      type: null,
+      retry_count: 0,
+    });
+    expect(items[1]).toMatchObject({
+      id: 3,
+      iri: 'https://example.org/1',
+      type: 'type1',
+      retry_count: 1,
+    });
   });
 
   it('throws if max retry count is reached', async () => {

@@ -14,7 +14,6 @@
     "@colonial-collections/common": "*",
     "@colonial-collections/datastore": "*",
     "@colonial-collections/sparql-file-iterator": "*",
-    "@colonial-collections/dereference-storer": "*",
     "@colonial-collections/xstate-actors": "*",
     "cac": "6.7.14",
     "fastq": "1.15.0",
@@ -22,7 +21,8 @@
     "zod": "3.22.4"
   },
   "devDependencies": {
-    "@colonial-collections/tsconfig": "*"
+    "@colonial-collections/tsconfig": "*",
+    "pino": "8.17.2"
   },
   "tsup": {
     "entry": [

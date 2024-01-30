@@ -58,6 +58,7 @@ export async function run(input: Input) {
 
   /*
     High-level workflow:
+    Get size of queue
     If queue is empty and a 'must run continue' query file is set: (start a new run)
       Register run
       Check if run must continue
@@ -70,7 +71,7 @@ export async function run(input: Input) {
       Collect IRIs of resources
       Remove obsolete resources
       Finalize
-    Else (= queue is not empty):
+    Else (queue is not empty):
       Update resources by querying a SPARQL endpoint with their IRIs
       If queue is empty:
         Upload to data platform

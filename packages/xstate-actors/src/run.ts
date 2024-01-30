@@ -4,6 +4,25 @@ import {readFile} from 'node:fs/promises';
 import {fromPromise} from 'xstate';
 import {z} from 'zod';
 
+const getLastRunInputSchema = z.object({
+  logger: z.any().refine(val => val !== undefined, {
+    message: 'logger must be defined',
+  }),
+  runs: z.instanceof(Runs),
+});
+
+export type GetLastRunInput = z.input<typeof getLastRunInputSchema>;
+
+export const getLastRun = fromPromise(
+  async ({input}: {input: GetLastRunInput}) => {
+    const opts = getLastRunInputSchema.parse(input);
+
+    opts.logger.info('Getting last run');
+
+    return opts.runs.getLast();
+  }
+);
+
 const registerRunInputSchema = z.object({
   logger: z.any().refine(val => val !== undefined, {
     message: 'logger must be defined',

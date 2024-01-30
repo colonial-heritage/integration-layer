@@ -74,6 +74,7 @@ export class Queue {
 
     const newItem: NewQueueItem = {
       iri: item.iri,
+      type: item.type,
       retry_count: newRetryCount,
     };
     return this.push(newItem);
