@@ -16,14 +16,14 @@ beforeEach(async () => {
 });
 
 describe('new', () => {
-  it('returns a new instance', async () => {
+  it('returns a new instance', () => {
     const queue = new Queue({connection});
 
     expect(queue).toBeInstanceOf(Queue);
   });
 });
 
-describe('push', async () => {
+describe('push', () => {
   it('pushes an item', async () => {
     const queue = new Queue({connection});
 
@@ -70,7 +70,7 @@ describe('push', async () => {
   });
 });
 
-describe('retry', async () => {
+describe('retry', () => {
   it('retries an item', async () => {
     const queue = new Queue({connection});
 
@@ -117,7 +117,7 @@ describe('retry', async () => {
   });
 });
 
-describe('remove', async () => {
+describe('remove', () => {
   it('removes an item', async () => {
     const queue = new Queue({connection});
 
@@ -131,12 +131,14 @@ describe('remove', async () => {
   });
 });
 
-describe('processed', async () => {
-  it('processes an item', async () => {
-    const queue = new Queue({connection});
-    const item = await queue.push({iri: 'https://example.org'});
+describe('processAndSave', () => {
+  it('processes an item, adding it to the registry', async () => {
+    const iri = 'https://example.org';
 
-    await queue.processed(item);
+    const queue = new Queue({connection});
+    const item = await queue.push({iri});
+
+    await queue.processAndSave(item);
 
     const queuedItems = await queue.getAll();
 
@@ -148,11 +150,35 @@ describe('processed', async () => {
 
     // Added to registry
     expect(registeredItems.length).toBe(1);
-    expect(registeredItems[0].iri).toEqual('https://example.org');
+    expect(registeredItems[0].iri).toEqual(iri);
   });
 });
 
-describe('getAll', async () => {
+describe('processAndRemove', () => {
+  it('processes an item, removing it from the registry', async () => {
+    const iri = 'https://example.org';
+
+    const registry = new Registry({connection});
+    registry.save({iri});
+
+    const queue = new Queue({connection});
+    const item = await queue.push({iri});
+
+    await queue.processAndRemove(item);
+
+    const queuedItems = await queue.getAll();
+
+    // Removed from queue
+    expect(queuedItems.length).toBe(0);
+
+    const registeredItems = await registry.getAll();
+
+    // Removed from registry
+    expect(registeredItems.length).toBe(0);
+  });
+});
+
+describe('getAll', () => {
   it('gets all items, sorted by date of creation', async () => {
     const queue = new Queue({connection});
 
@@ -193,7 +219,7 @@ describe('getAll', async () => {
   });
 });
 
-describe('size', async () => {
+describe('size', () => {
   it('gets the number of items', async () => {
     const queue = new Queue({connection});
 

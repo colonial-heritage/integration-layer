@@ -34,6 +34,8 @@ const runOptionsSchema = z.object({
 
 export type RunOptions = z.input<typeof runOptionsSchema>;
 
+const doesNotExistErrorMessages = ['HTTP status 404', 'HTTP status 410'];
+
 export class DereferenceStorer extends EventEmitter {
   private readonly logger: pino.Logger;
   private readonly filestore: Filestore;
@@ -65,11 +67,29 @@ export class DereferenceStorer extends EventEmitter {
     let numberOfProcessedResources = 0;
 
     const save = async (item: QueueItem) => {
-      const quadStream = await this.dereferencer.getResource(item.iri);
-      await this.filestore.save({iri: item.iri, quadStream});
-      await opts.queue.processed(item);
-      await setTimeout(opts.waitBetweenRequests); // Try not to hurt the server or trigger its rate limiter
+      try {
+        const quadStream = await this.dereferencer.getResource(item.iri);
+        await this.filestore.save({iri: item.iri, quadStream});
+        await opts.queue.processAndSave(item);
+      } catch (err) {
+        // A lookup may result in a '4xx' status. We then assume the resource
+        // does not or no longer exists and must be deleted from the local store
+        const error = err as Error;
+        const isDoesNotExistError = doesNotExistErrorMessages.some(
+          doesNotExistErrorMessage =>
+            error.message.includes(doesNotExistErrorMessage)
+        );
 
+        // It's an error of a different kind
+        if (!isDoesNotExistError) {
+          throw err; // TBD: send to dead letter queue?
+        }
+
+        await this.filestore.deleteByIri(item.iri);
+        await opts.queue.processAndRemove(item);
+      }
+
+      await setTimeout(opts.waitBetweenRequests); // Try not to hurt the server or trigger its rate limiter
       numberOfProcessedResources++;
       this.emit('stored-resource', items.length, numberOfProcessedResources);
     };

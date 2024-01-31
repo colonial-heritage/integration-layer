@@ -63,7 +63,7 @@ export class SparqlStorer extends EventEmitter {
     const save = async (item: QueueItem) => {
       const quadStream = await this.generator.getResource(item.iri);
       await this.filestore.save({iri: item.iri, quadStream});
-      await opts.queue.processed(item);
+      await opts.queue.processAndSave(item);
       await setTimeout(opts.waitBetweenRequests); // Try not to hurt the server or trigger its rate limiter
 
       numberOfProcessedResources++;

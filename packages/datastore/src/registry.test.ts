@@ -15,17 +15,17 @@ beforeEach(async () => {
 });
 
 describe('new', () => {
-  it('returns a new instance', async () => {
+  it('returns a new instance', () => {
     const registry = new Registry({connection});
 
     expect(registry).toBeInstanceOf(Registry);
   });
 });
 
-describe('save', async () => {
+describe('save', () => {
   it('saves an item', async () => {
-    const registry = new Registry({connection});
     const iri = 'https://example.org';
+    const registry = new Registry({connection});
 
     await registry.save({iri});
 
@@ -36,8 +36,8 @@ describe('save', async () => {
   });
 
   it('saves an item with an IRI that already exists', async () => {
-    const registry = new Registry({connection});
     const iri = 'https://example.org';
+    const registry = new Registry({connection});
 
     await registry.save({iri});
     await registry.save({iri});
@@ -49,7 +49,21 @@ describe('save', async () => {
   });
 });
 
-describe('removeIfNotInQueue', async () => {
+describe('removeByIri', () => {
+  it('removes an item', async () => {
+    const iri = 'https://example.org';
+    const registry = new Registry({connection});
+
+    await registry.save({iri});
+    await registry.removeByIri(iri);
+
+    const items = await registry.getAll();
+
+    expect(items.length).toBe(0);
+  });
+});
+
+describe('removeIfNotInQueue', () => {
   it('removes items that are not in the queue', async () => {
     const registry = new Registry({connection});
 

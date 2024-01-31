@@ -57,9 +57,14 @@ export class Queue {
     await this.db.deleteFrom('queue').where('id', '=', id).execute();
   }
 
-  async processed(item: QueueItem) {
+  async processAndSave(item: QueueItem) {
     await this.remove(item.id);
     await this.registry.save({iri: item.iri, type: item.type});
+  }
+
+  async processAndRemove(item: QueueItem) {
+    await this.remove(item.id);
+    await this.registry.removeByIri(item.iri);
   }
 
   async retry(item: QueueItem) {

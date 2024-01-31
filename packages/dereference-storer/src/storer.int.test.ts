@@ -128,4 +128,29 @@ describe('run', () => {
     expect(existsSync(pathOfIri2)).toBe(true);
     expect(existsSync(pathOfIri3)).toBe(true);
   });
+
+  it('removes items that result in a 404 or 410 status from the filestore', async () => {
+    const iri1 = 'https://httpbin.org/status/404';
+    const iri2 = 'https://httpbin.org/status/410';
+
+    const queue = new Queue({connection});
+    await queue.push({iri: iri1});
+    await queue.push({iri: iri2});
+
+    const storer = new DereferenceStorer({
+      logger: pino(),
+      resourceDir,
+    });
+
+    await storer.run({queue});
+
+    const queueSize = await queue.size();
+    expect(queueSize).toBe(0);
+
+    const pathOfIri1 = filestore.createPathFromIri(iri1);
+    const pathOfIri2 = filestore.createPathFromIri(iri2);
+
+    expect(existsSync(pathOfIri1)).toBe(false);
+    expect(existsSync(pathOfIri2)).toBe(false);
+  });
 });

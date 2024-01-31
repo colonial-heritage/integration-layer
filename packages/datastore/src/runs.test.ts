@@ -14,14 +14,14 @@ beforeEach(async () => {
 });
 
 describe('new', () => {
-  it('returns a new instance', async () => {
+  it('returns a new instance', () => {
     const runs = new Runs({connection});
 
     expect(runs).toBeInstanceOf(Runs);
   });
 });
 
-describe('save', async () => {
+describe('save', () => {
   it('saves a run', async () => {
     const runs = new Runs({connection});
 
@@ -73,7 +73,7 @@ describe('save', async () => {
   });
 });
 
-describe('getLast', async () => {
+describe('getLast', () => {
   it('gets the last run', async () => {
     const runs = new Runs({connection});
 
