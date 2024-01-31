@@ -53,7 +53,7 @@ describe('run', () => {
     });
 
     let numberOfEmits = 0;
-    storer.on('stored-resource', (totalNumberOfResources: number) => {
+    storer.on('processed-resource', (totalNumberOfResources: number) => {
       expect(totalNumberOfResources).toBe(2);
       numberOfEmits++;
     });
@@ -89,7 +89,7 @@ describe('run', () => {
     });
 
     let numberOfEmits = 0;
-    storer.on('stored-resource', (totalNumberOfResources: number) => {
+    storer.on('processed-resource', (totalNumberOfResources: number) => {
       expect(totalNumberOfResources).toBe(1);
       numberOfEmits++;
     });

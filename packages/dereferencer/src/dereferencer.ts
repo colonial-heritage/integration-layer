@@ -22,6 +22,8 @@ const constructorOptionsSchema = z
 
 export type ConstructorOptions = z.input<typeof constructorOptionsSchema>;
 
+const doesNotExistErrorMessages = ['HTTP status 404', 'HTTP status 410'];
+
 export class Dereferencer extends EventEmitter {
   private readonly dereferenceOptions: IDereferenceOptions;
 
@@ -83,5 +85,18 @@ export class Dereferencer extends EventEmitter {
     const quadStream = response.data;
 
     return quadStream;
+  }
+
+  static isDoesNotExistError(error: Error) {
+    if (!(error instanceof Error)) {
+      return false;
+    }
+
+    const isDoesNotExistError = doesNotExistErrorMessages.some(
+      doesNotExistErrorMessage =>
+        error.message.includes(doesNotExistErrorMessage)
+    );
+
+    return isDoesNotExistError;
   }
 }

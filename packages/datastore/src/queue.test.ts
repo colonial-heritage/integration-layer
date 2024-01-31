@@ -34,6 +34,8 @@ describe('push', () => {
     expect(items.length).toBe(1);
     expect(items[0]).toMatchObject({
       iri: 'https://example.org',
+      action: null,
+      type: null,
       retry_count: 0,
     });
   });
@@ -43,7 +45,8 @@ describe('push', () => {
 
     await queue.push({
       iri: 'https://example.org',
-      type: 'type1',
+      action: 'create',
+      type: 'type',
       retry_count: 1,
     });
 
@@ -52,7 +55,8 @@ describe('push', () => {
     expect(items.length).toBe(1);
     expect(items[0]).toMatchObject({
       iri: 'https://example.org',
-      type: 'type1',
+      action: 'create',
+      type: 'type',
       retry_count: 1,
     });
   });
@@ -74,9 +78,31 @@ describe('retry', () => {
   it('retries an item', async () => {
     const queue = new Queue({connection});
 
+    const originalItem = await queue.push({iri: 'https://example.org/1'});
+    await queue.push({iri: 'https://example.org/2'});
+
+    await queue.retry(originalItem);
+
+    const items = await queue.getAll();
+
+    expect(items.length).toBe(2);
+    expect(items[0]).toMatchObject({
+      iri: 'https://example.org/2',
+      retry_count: 0,
+    });
+    expect(items[1]).toMatchObject({
+      iri: 'https://example.org/1',
+      retry_count: 1,
+    });
+  });
+
+  it('retries an item, keeping additional information', async () => {
+    const queue = new Queue({connection});
+
     const originalItem = await queue.push({
       iri: 'https://example.org/1',
-      type: 'type1',
+      action: 'create',
+      type: 'type',
     });
     await queue.push({iri: 'https://example.org/2'});
 
@@ -86,15 +112,15 @@ describe('retry', () => {
 
     expect(items.length).toBe(2);
     expect(items[0]).toMatchObject({
-      id: 2,
       iri: 'https://example.org/2',
+      action: null,
       type: null,
       retry_count: 0,
     });
     expect(items[1]).toMatchObject({
-      id: 3,
       iri: 'https://example.org/1',
-      type: 'type1',
+      action: 'create',
+      type: 'type',
       retry_count: 1,
     });
   });
@@ -119,11 +145,11 @@ describe('retry', () => {
 
 describe('remove', () => {
   it('removes an item', async () => {
+    const iri = 'https://example.org';
     const queue = new Queue({connection});
 
-    const item = await queue.push({iri: 'https://example.org'});
-
-    await queue.remove(item.id);
+    await queue.push({iri});
+    await queue.remove(iri);
 
     const items = await queue.getAll();
 
@@ -189,8 +215,8 @@ describe('getAll', () => {
     const items = await queue.getAll();
 
     expect(items.length).toBe(2);
-    expect(items[0].id).toEqual(1);
-    expect(items[1].id).toEqual(2);
+    expect(items[0].iri).toEqual('https://example.org/1');
+    expect(items[1].iri).toEqual('https://example.org/2');
   });
 
   it('gets a limited number of items', async () => {
@@ -202,20 +228,20 @@ describe('getAll', () => {
     const items = await queue.getAll({limit: 1});
 
     expect(items.length).toBe(1);
-    expect(items[0].id).toEqual(1);
+    expect(items[0].iri).toEqual('https://example.org/1');
   });
 
   it('gets the items belonging to a specific type', async () => {
     const queue = new Queue({connection});
     const iri = 'https://example.org';
 
-    await queue.push({iri, type: 'type1'});
+    await queue.push({iri, type: 'type'});
     await queue.push({iri});
 
-    const items = await queue.getAll({type: 'type1'});
+    const items = await queue.getAll({type: 'type'});
 
     expect(items.length).toBe(1);
-    expect(items[0].id).toEqual(1);
+    expect(items[0].iri).toEqual('https://example.org');
   });
 });
 
@@ -233,10 +259,10 @@ describe('size', () => {
   it('gets the number of items belonging to a specific type', async () => {
     const queue = new Queue({connection});
 
-    await queue.push({iri: 'https://example.org/1', type: 'type1'});
+    await queue.push({iri: 'https://example.org/1', type: 'type'});
     await queue.push({iri: 'https://example.org/2'});
 
-    const size = await queue.size({type: 'type1'});
+    const size = await queue.size({type: 'type'});
 
     expect(size).toBe(1);
   });

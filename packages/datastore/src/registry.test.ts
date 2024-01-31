@@ -49,13 +49,13 @@ describe('save', () => {
   });
 });
 
-describe('removeByIri', () => {
+describe('remove', () => {
   it('removes an item', async () => {
     const iri = 'https://example.org';
     const registry = new Registry({connection});
 
     await registry.save({iri});
-    await registry.removeByIri(iri);
+    await registry.remove(iri);
 
     const items = await registry.getAll();
 

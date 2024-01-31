@@ -57,7 +57,7 @@ export async function run(input: Input) {
       Collect IRIs
       Finalize
     Else (queue is not empty):
-      Dereference IRIs
+      Process collected IRIs: dereference or delete
       Finalize
 
     The workflow currently does not upload the dereferenced resources
@@ -164,7 +164,6 @@ export async function run(input: Input) {
         },
       },
       // State 6
-      // TODO: add actor for deleting obsolete resources
       dereference: {
         invoke: {
           id: 'dereference',

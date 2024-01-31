@@ -40,7 +40,7 @@ describe('run', () => {
     });
 
     let numberOfEmits = 0;
-    storer.on('stored-resource', (totalNumberOfResources: number) => {
+    storer.on('processed-resource', (totalNumberOfResources: number) => {
       expect(totalNumberOfResources).toBe(2);
       numberOfEmits++;
     });
@@ -77,7 +77,7 @@ describe('run', () => {
     });
 
     let numberOfEmits = 0;
-    storer.on('stored-resource', (totalNumberOfResources: number) => {
+    storer.on('processed-resource', (totalNumberOfResources: number) => {
       expect(totalNumberOfResources).toBe(1);
       numberOfEmits++;
     });
@@ -152,5 +152,32 @@ describe('run', () => {
 
     expect(existsSync(pathOfIri1)).toBe(false);
     expect(existsSync(pathOfIri2)).toBe(false);
+  });
+
+  it('removes items that have action "delete" from the filestore', async () => {
+    const iri = 'http://vocab.getty.edu/aat/300111999';
+    const pathOfIri = filestore.createPathFromIri(iri);
+
+    const queue = new Queue({connection});
+
+    const storer = new DereferenceStorer({
+      logger: pino(),
+      resourceDir,
+      headers: {
+        Accept: 'text/turtle', // Getty does not provide correct link headers for JSON
+      },
+    });
+
+    // First run: dereference an IRI
+    await queue.push({iri});
+    await storer.run({queue});
+
+    expect(existsSync(pathOfIri)).toBe(true);
+
+    // Second run: remove an IRI
+    await queue.push({iri, action: 'delete'});
+    await storer.run({queue});
+
+    expect(existsSync(pathOfIri)).toBe(false);
   });
 });

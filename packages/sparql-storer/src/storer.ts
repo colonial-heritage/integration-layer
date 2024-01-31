@@ -57,26 +57,29 @@ export class SparqlStorer extends EventEmitter {
       type: opts.type,
     });
 
-    this.logger.info(`Storing ${items.length} items from the queue`);
+    this.logger.info(`Processing ${items.length} items from the queue`);
     let numberOfProcessedResources = 0;
 
-    const save = async (item: QueueItem) => {
+    const process = async (item: QueueItem) => {
       const quadStream = await this.generator.getResource(item.iri);
       await this.filestore.save({iri: item.iri, quadStream});
       await opts.queue.processAndSave(item);
       await setTimeout(opts.waitBetweenRequests); // Try not to hurt the server or trigger its rate limiter
 
       numberOfProcessedResources++;
-      this.emit('stored-resource', items.length, numberOfProcessedResources);
+      this.emit('processed-resource', items.length, numberOfProcessedResources);
     };
 
-    const saveQueue = fastq.promise(save, opts.numberOfConcurrentRequests);
+    const processQueue = fastq.promise(
+      process,
+      opts.numberOfConcurrentRequests
+    );
 
     for (const item of items) {
-      saveQueue.push(item).catch(async err => {
+      processQueue.push(item).catch(async err => {
         this.logger.error(
           err,
-          `An error occurred when saving "${item.iri}": ${err.message}`
+          `An error occurred when processing "${item.iri}": ${err.message}`
         );
 
         try {
@@ -87,6 +90,6 @@ export class SparqlStorer extends EventEmitter {
       });
     }
 
-    await saveQueue.drained();
+    await processQueue.drained();
   }
 }

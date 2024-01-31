@@ -1,4 +1,4 @@
-import {Queue} from '@colonial-collections/datastore';
+import {type Action, Queue} from '@colonial-collections/datastore';
 import {
   ChangeDiscoverer,
   type QueueRecord,
@@ -26,6 +26,16 @@ const inputSchema = z.object({
 
 export type IterateInput = z.input<typeof inputSchema>;
 
+const fromChangeTypesToAction = new Map([
+  ['add', 'create'],
+  ['create', 'create'],
+  ['update', 'update'],
+  ['delete', 'delete'],
+  ['remove', 'delete'],
+  ['move-delete', 'delete'],
+  ['move-create', 'create'],
+]);
+
 export const iterate = fromPromise(async ({input}: {input: IterateInput}) => {
   const opts = inputSchema.parse(input);
 
@@ -33,19 +43,9 @@ export const iterate = fromPromise(async ({input}: {input: IterateInput}) => {
     `Collecting IRIs of changed resources from IIIF Change Discovery endpoint "${opts.collectionIri}"`
   );
 
-  const fromChangeTypesToBasicTypes = new Map([
-    ['add', 'create'],
-    ['create', 'create'],
-    ['update', 'update'],
-    ['delete', 'delete'],
-    ['remove', 'delete'],
-    ['move-delete', 'delete'],
-    ['move-create', 'create'],
-  ]);
-
   const save = async (record: QueueRecord) => {
-    const basicType = fromChangeTypesToBasicTypes.get(record.type);
-    opts.queue.push({iri: record.iri, type: basicType});
+    const action = fromChangeTypesToAction.get(record.type) as Action;
+    opts.queue.push({iri: record.iri, action});
   };
   const iteratorQueue = fastq.promise(save, 1); // Concurrency
 
@@ -74,4 +74,7 @@ export const iterate = fromPromise(async ({input}: {input: IterateInput}) => {
 
   // Fetch the changes from the remote endpoint
   await discoverer.run();
+
+  const queueSize = await opts.queue.size();
+  opts.logger.info(`Collected ${queueSize} IRIs`);
 });

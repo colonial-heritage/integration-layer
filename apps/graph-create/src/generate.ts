@@ -39,7 +39,7 @@ export const generate = fromPromise(async ({input}: {input: Input}) => {
 
   const progress = new ProgressLogger({logger: opts.logger});
   storer.on(
-    'stored-resource',
+    'processed-resource',
     (totalNumberOfResources: number, numberOfProcessedResources: number) => {
       progress.log({totalNumberOfResources, numberOfProcessedResources});
     }

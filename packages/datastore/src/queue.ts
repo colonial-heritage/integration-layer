@@ -53,22 +53,22 @@ export class Queue {
       .executeTakeFirstOrThrow();
   }
 
-  async remove(id: number) {
-    await this.db.deleteFrom('queue').where('id', '=', id).execute();
+  async remove(iri: string) {
+    await this.db.deleteFrom('queue').where('iri', '=', iri).execute();
   }
 
   async processAndSave(item: QueueItem) {
-    await this.remove(item.id);
+    await this.remove(item.iri);
     await this.registry.save({iri: item.iri, type: item.type});
   }
 
   async processAndRemove(item: QueueItem) {
-    await this.remove(item.id);
-    await this.registry.removeByIri(item.iri);
+    await this.remove(item.iri);
+    await this.registry.remove(item.iri);
   }
 
   async retry(item: QueueItem) {
-    await this.remove(item.id);
+    await this.remove(item.iri);
 
     const newRetryCount = item.retry_count + 1;
     if (newRetryCount > this.maxRetryCount) {
@@ -79,6 +79,7 @@ export class Queue {
 
     const newItem: NewQueueItem = {
       iri: item.iri,
+      action: item.action,
       type: item.type,
       retry_count: newRetryCount,
     };
@@ -109,7 +110,7 @@ export class Queue {
 
     let query = this.db
       .selectFrom('queue')
-      .select(eb => eb.fn.count<number>('id').as('count'));
+      .select(eb => eb.fn.count<number>('iri').as('count'));
 
     if (opts.type !== undefined) {
       query = query.where('type', '=', opts.type);
