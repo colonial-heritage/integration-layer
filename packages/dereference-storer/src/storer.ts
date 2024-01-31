@@ -108,7 +108,7 @@ export class DereferenceStorer extends EventEmitter {
       processQueue.push(item).catch(async err => {
         this.logger.error(
           err,
-          `An error occurred when saving "${item.iri}": ${err.message}`
+          `An error occurred when processing "${item.iri}": ${err.message}`
         );
 
         try {
