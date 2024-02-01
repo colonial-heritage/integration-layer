@@ -16,8 +16,6 @@ cli
   .option('--triplydb-api-token <string>', 'TriplyDB API token')
   .option('--triplydb-account <string>', 'TriplyDB account')
   .option('--triplydb-dataset <string>', 'TriplyDB dataset')
-  .option('--triplydb-service-name <string>', 'TriplyDB service name')
-  .option('--triplydb-service-type <string>', 'TriplyDB service type')
   .action(async (input: Input) => {
     import('./run.js').then(action => action.run(input));
   });

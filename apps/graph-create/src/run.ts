@@ -40,8 +40,6 @@ const inputSchema = z.object({
   triplydbApiToken: z.string(),
   triplydbAccount: z.string(),
   triplydbDataset: z.string(),
-  triplydbServiceName: z.string(),
-  triplydbServiceType: z.string(),
   graphName: z.string(),
   tempDir: z.string().optional(),
 });

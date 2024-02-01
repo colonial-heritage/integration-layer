@@ -36,13 +36,6 @@ export type UpsertGraphFromDirectoryOptions = z.infer<
   typeof upsertGraphFromDirectoryOptionsSchema
 >;
 
-const restartServiceOptionsSchema = z.object({
-  name: z.string(),
-  type: z.string(), // E.g. "virtuoso", "elasticsearch"
-});
-
-export type RestartServiceOptions = z.infer<typeof restartServiceOptionsSchema>;
-
 export class TriplyDb {
   private readonly logger: pino.Logger;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -133,26 +126,24 @@ export class TriplyDb {
     await unlink(tarFilename);
   }
 
-  async restartService(options: RestartServiceOptions) {
-    const opts = restartServiceOptionsSchema.parse(options);
+  async restartServices() {
+    this.logger.info('Restarting services');
 
-    this.logger.info(`Restarting service "${opts.name}"`);
+    const services = this.dataset.getServices();
 
-    // Create service if it doesn't exist.
-    // This doesn't work for an Elasticsearch service though - a bug?
-    const service = await this.dataset.ensureService(opts.name, {
-      type: opts.type,
-    });
-
-    // Update the service with the new data in the uploaded RDF files
-    try {
-      await service.update();
-    } catch (err) {
-      const error = err as Error;
-      if (
-        !error.message.includes('Cannot sync a service that is not out of sync')
-      ) {
-        throw err;
+    // Update each service in sequence with the new data in the uploaded RDF files
+    for await (const service of services) {
+      try {
+        await service.update();
+      } catch (err) {
+        const error = err as Error;
+        if (
+          !error.message.includes(
+            'Cannot sync a service that is not out of sync'
+          )
+        ) {
+          throw err;
+        }
       }
     }
   }

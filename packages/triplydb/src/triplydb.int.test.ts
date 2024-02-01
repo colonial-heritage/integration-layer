@@ -43,11 +43,8 @@ describe('upsertGraphFromDirectory', () => {
   });
 });
 
-describe('restartService', () => {
-  it('restarts a service', async () => {
-    await triplyDb.restartService({
-      name: 'kg',
-      type: 'virtuoso',
-    });
+describe('restartServices', () => {
+  it('restarts services', async () => {
+    await triplyDb.restartServices();
   });
 });

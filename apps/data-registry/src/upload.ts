@@ -16,8 +16,6 @@ const inputSchema = z.object({
   triplydbApiToken: z.string(),
   triplydbAccount: z.string(),
   triplydbDataset: z.string(),
-  triplydbServiceName: z.string(),
-  triplydbServiceType: z.string(),
 });
 
 export type UploadInput = z.input<typeof inputSchema>;
@@ -41,9 +39,6 @@ export const uploadRdfFiles = fromPromise(
       });
     }
 
-    await triplyDb.restartService({
-      name: opts.triplydbServiceName,
-      type: opts.triplydbServiceType,
-    });
+    await triplyDb.restartServices();
   }
 );

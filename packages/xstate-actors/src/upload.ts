@@ -11,8 +11,6 @@ const inputSchema = z.object({
   triplydbApiToken: z.string(),
   triplydbAccount: z.string(),
   triplydbDataset: z.string(),
-  triplydbServiceName: z.string(),
-  triplydbServiceType: z.string(),
   graphName: z.string(),
   tempDir: z.string().optional(),
 });
@@ -36,8 +34,5 @@ export const upload = fromPromise(async ({input}: {input: UploadInput}) => {
     dirTemp: opts.tempDir,
   });
 
-  await triplyDb.restartService({
-    name: opts.triplydbServiceName,
-    type: opts.triplydbServiceType,
-  });
+  await triplyDb.restartServices();
 });

@@ -13,8 +13,6 @@ const inputSchema = z.object({
   triplydbApiToken: z.string(),
   triplydbAccount: z.string(),
   triplydbDataset: z.string(),
-  triplydbServiceName: z.string(),
-  triplydbServiceType: z.string(),
 });
 
 export type Input = z.input<typeof inputSchema>;
