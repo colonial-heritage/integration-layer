@@ -34,8 +34,6 @@ const runOptionsSchema = z.object({
 
 export type RunOptions = z.input<typeof runOptionsSchema>;
 
-const doesNotExistErrorMessages = ['HTTP status 404', 'HTTP status 410'];
-
 export class DereferenceStorer extends EventEmitter {
   private readonly logger: pino.Logger;
   private readonly filestore: Filestore;
@@ -63,44 +61,54 @@ export class DereferenceStorer extends EventEmitter {
       type: opts.type,
     });
 
-    this.logger.info(`Storing ${items.length} items from the queue`);
+    this.logger.info(`Processing ${items.length} items from the queue`);
     let numberOfProcessedResources = 0;
 
-    const save = async (item: QueueItem) => {
-      try {
-        const quadStream = await this.dereferencer.getResource(item.iri);
-        await this.filestore.save({iri: item.iri, quadStream});
-        await opts.queue.processAndSave(item);
-      } catch (err) {
-        // A lookup may result in a '4xx' status. We then assume the resource
-        // does not or no longer exists and must be deleted from the local store
-        const error = err as Error;
-        const isDoesNotExistError = doesNotExistErrorMessages.some(
-          doesNotExistErrorMessage =>
-            error.message.includes(doesNotExistErrorMessage)
-        );
+    const process = async (item: QueueItem) => {
+      const action = item.action;
 
-        // It's an error of a different kind
-        if (!isDoesNotExistError) {
-          throw err; // TBD: send to dead letter queue?
-        }
-
+      if (action === 'delete') {
         await this.filestore.deleteByIri(item.iri);
         await opts.queue.processAndRemove(item);
+      } else {
+        // It's a create or update action
+        try {
+          const quadStream = await this.dereferencer.getResource(item.iri);
+          await this.filestore.save({iri: item.iri, quadStream});
+          await opts.queue.processAndSave(item);
+        } catch (err) {
+          // A lookup may result in a '4xx' status. We then assume the resource
+          // does not or no longer exists and must be deleted from the local store
+          const isDoesNotExistError = Dereferencer.isDoesNotExistError(
+            err as Error
+          );
+
+          // It's an error of a different kind
+          if (!isDoesNotExistError) {
+            throw err; // TBD: send to dead letter queue?
+          }
+
+          await this.filestore.deleteByIri(item.iri);
+          await opts.queue.processAndRemove(item);
+        }
+
+        await setTimeout(opts.waitBetweenRequests); // Try not to hurt the server or trigger its rate limiter
       }
 
-      await setTimeout(opts.waitBetweenRequests); // Try not to hurt the server or trigger its rate limiter
       numberOfProcessedResources++;
-      this.emit('stored-resource', items.length, numberOfProcessedResources);
+      this.emit('processed-resource', items.length, numberOfProcessedResources);
     };
 
-    const saveQueue = fastq.promise(save, opts.numberOfConcurrentRequests);
+    const processQueue = fastq.promise(
+      process,
+      opts.numberOfConcurrentRequests
+    );
 
     for (const item of items) {
-      saveQueue.push(item).catch(async err => {
+      processQueue.push(item).catch(async err => {
         this.logger.error(
           err,
-          `An error occurred when saving "${item.iri}": ${err.message}`
+          `An error occurred when processing "${item.iri}": ${err.message}`
         );
 
         try {
@@ -111,6 +119,6 @@ export class DereferenceStorer extends EventEmitter {
       });
     }
 
-    await saveQueue.drained();
+    await processQueue.drained();
   }
 }

@@ -46,7 +46,7 @@ export class Registry {
       .executeTakeFirstOrThrow();
   }
 
-  async removeByIri(iri: string) {
+  async remove(iri: string) {
     await this.db.deleteFrom('registry').where('iri', '=', iri).execute();
   }
 

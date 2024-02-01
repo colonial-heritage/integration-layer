@@ -4,8 +4,7 @@ import {Kysely, sql} from 'kysely';
 export async function up(db: Kysely<Database>) {
   await db.schema
     .createTable('registry')
-    .addColumn('id', 'integer', col => col.primaryKey().notNull())
-    .addColumn('iri', 'text', col => col.notNull().unique())
+    .addColumn('iri', 'text', col => col.primaryKey().notNull())
     .addColumn('type', 'text')
     .addColumn('created_at', 'text', col =>
       col.defaultTo(sql`CURRENT_TIMESTAMP`).notNull()

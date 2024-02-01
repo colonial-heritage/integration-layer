@@ -177,3 +177,28 @@ empty response`
     await expectStreamToMatch(quadStream);
   });
 });
+
+describe('isDoesNotExistError', () => {
+  it('returns false if argument is not an error', () => {
+    // @ts-expect-error:TS2345
+    expect(Dereferencer.isDoesNotExistError('Not an error')).toBe(false);
+  });
+
+  it('returns false if error is not a 404 or 410 error', () => {
+    const error = new Error('Some error');
+
+    expect(Dereferencer.isDoesNotExistError(error)).toBe(false);
+  });
+
+  it('returns true if error is a 404', () => {
+    const error = new Error('HTTP status 404');
+
+    expect(Dereferencer.isDoesNotExistError(error)).toBe(true);
+  });
+
+  it('returns true if error is a 410', () => {
+    const error = new Error('HTTP status 410');
+
+    expect(Dereferencer.isDoesNotExistError(error)).toBe(true);
+  });
+});

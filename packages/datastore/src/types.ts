@@ -6,9 +6,11 @@ export interface Database {
   runs: RunsTable;
 }
 
+export type Action = 'create' | 'update' | 'delete';
+
 export interface QueueTable {
-  id: Generated<number>;
   iri: string;
+  action: ColumnType<Action, Action | undefined, Action | undefined>;
   type: ColumnType<string, string | undefined, string | undefined>;
   retry_count: ColumnType<number, number | undefined, number>;
   created_at: ColumnType<Date, string | undefined, never>;
@@ -19,7 +21,6 @@ export type QueueItem = Selectable<QueueTable>;
 export type NewQueueItem = Insertable<QueueTable>;
 
 export interface RegistryTable {
-  id: Generated<number>;
   iri: string;
   type: ColumnType<string, string | undefined, string | undefined>;
   created_at: ColumnType<Date, string | undefined, never>;
