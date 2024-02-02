@@ -53,6 +53,37 @@ export class DereferenceStorer extends EventEmitter {
     this.dereferencer.on('warning', (err: Error) => this.logger.warn(err));
   }
 
+  private async process(options: RunOptions, item: QueueItem) {
+    if (item.action === 'delete') {
+      await this.filestore.deleteByIri(item.iri);
+      await options.queue.processAndRemove(item);
+      return;
+    }
+
+    // It's a create or update action
+    try {
+      const quadStream = await this.dereferencer.getResource(item.iri);
+      await this.filestore.save({iri: item.iri, quadStream});
+      await options.queue.processAndSave(item);
+    } catch (err) {
+      // A lookup may result in a '4xx' status. We then assume the resource
+      // does not or no longer exists and must be deleted from the local store
+      const isDoesNotExistError = Dereferencer.isDoesNotExistError(
+        err as Error
+      );
+
+      // It's an error of a different kind
+      if (!isDoesNotExistError) {
+        throw err; // TBD: send to dead letter queue?
+      }
+
+      await this.filestore.deleteByIri(item.iri);
+      await options.queue.processAndRemove(item);
+    }
+
+    await setTimeout(options.waitBetweenRequests); // Try not to hurt the server or trigger its rate limiter
+  }
+
   async run(options: RunOptions) {
     const opts = runOptionsSchema.parse(options);
 
@@ -65,36 +96,7 @@ export class DereferenceStorer extends EventEmitter {
     let numberOfProcessedResources = 0;
 
     const process = async (item: QueueItem) => {
-      const action = item.action;
-
-      if (action === 'delete') {
-        await this.filestore.deleteByIri(item.iri);
-        await opts.queue.processAndRemove(item);
-      } else {
-        // It's a create or update action
-        try {
-          const quadStream = await this.dereferencer.getResource(item.iri);
-          await this.filestore.save({iri: item.iri, quadStream});
-          await opts.queue.processAndSave(item);
-        } catch (err) {
-          // A lookup may result in a '4xx' status. We then assume the resource
-          // does not or no longer exists and must be deleted from the local store
-          const isDoesNotExistError = Dereferencer.isDoesNotExistError(
-            err as Error
-          );
-
-          // It's an error of a different kind
-          if (!isDoesNotExistError) {
-            throw err; // TBD: send to dead letter queue?
-          }
-
-          await this.filestore.deleteByIri(item.iri);
-          await opts.queue.processAndRemove(item);
-        }
-
-        await setTimeout(opts.waitBetweenRequests); // Try not to hurt the server or trigger its rate limiter
-      }
-
+      await this.process(opts, item);
       numberOfProcessedResources++;
       this.emit('processed-resource', items.length, numberOfProcessedResources);
     };
