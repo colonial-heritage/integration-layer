@@ -61,13 +61,13 @@ export const iterate = fromPromise(async ({input}: {input: IterateInput}) => {
   discoverer.on('process-collection', (iri: string) =>
     opts.logger.info(`Processing pages in collection "${iri}"`)
   );
-  discoverer.on('process-page', (iri: string, dateLastRun?: Date) => {
-    const date =
-      dateLastRun instanceof Date ? dateLastRun.toISOString() : 'the beginning';
-    opts.logger.info(
-      `Processing changes in page "${iri}" changed since ${date}`
-    );
-  });
+  // discoverer.on('process-page', (iri: string, dateLastRun?: Date) => {
+  //   const date =
+  //     dateLastRun instanceof Date ? dateLastRun.toISOString() : 'the beginning';
+  //   opts.logger.info(
+  //     `Processing changes in page "${iri}" changed since ${date}`
+  //   );
+  // });
   discoverer.on('only-delete', () =>
     opts.logger.info('Refresh found; only processing delete activities')
   );
