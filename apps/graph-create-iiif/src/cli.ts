@@ -17,7 +17,7 @@ cli
     'IIIF Change Discovery endpoint URL'
   )
   .option(
-    '--iterate.credentials [string]',
+    '--iterate-credentials [string]',
     'Credentials: type, username and password'
   )
   .option(
@@ -25,10 +25,10 @@ cli
     'Wait between requests, in milliseconds'
   )
   .option(
-    '--dereference.credentials [string]',
+    '--dereference-credentials [string]',
     'Credentials: type, username and password'
   )
-  .option('--dereference.headers [string]', 'Headers for dereferencing IRIs')
+  .option('--dereference-headers [string]', 'Headers for dereferencing IRIs')
   .option(
     '--dereference-wait-between-requests [number]',
     'Wait between requests, in milliseconds'
