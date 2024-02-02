@@ -175,7 +175,7 @@ export async function run(input: Input) {
             credentials: context.dereferenceCredentials,
             headers: context.dereferenceHeaders,
             waitBetweenRequests: context.dereferenceWaitBetweenRequests,
-            timeoutPerRequest: context.dereferenceWaitBetweenRequests,
+            timeoutPerRequest: context.dereferenceTimeoutPerRequest,
             numberOfConcurrentRequests:
               context.dereferenceNumberOfConcurrentRequests,
             batchSize: context.dereferenceBatchSize,
