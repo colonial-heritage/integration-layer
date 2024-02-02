@@ -34,8 +34,8 @@ const inputSchema = z.object({
   dereferenceHeaders: z.record(z.string(), z.string()).optional(),
   dereferenceWaitBetweenRequests: z.number().default(100),
   dereferenceTimeoutPerRequest: z.number().optional(),
-  dereferenceNumberOfConcurrentRequests: z.number().default(5),
-  dereferenceBatchSize: z.number().default(1000),
+  dereferenceNumberOfConcurrentRequests: z.number().default(20), // ~ single-threaded max performance
+  dereferenceBatchSize: z.number().default(50000),
 });
 
 export type Input = z.input<typeof inputSchema>;
