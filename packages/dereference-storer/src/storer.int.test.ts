@@ -4,6 +4,7 @@ import {Filestore} from '@colonial-collections/filestore';
 import {existsSync} from 'node:fs';
 import {mkdir} from 'node:fs/promises';
 import {join} from 'node:path';
+import {setTimeout} from 'node:timers/promises';
 import {pino} from 'pino';
 import {rimraf} from 'rimraf';
 import {beforeEach, describe, expect, it} from 'vitest';
@@ -179,5 +180,29 @@ describe('run', () => {
     await storer.run({queue});
 
     expect(existsSync(pathOfIri)).toBe(false);
+  });
+
+  it('registers items that result in an error status for retry', async () => {
+    const iri = 'https://httpbin.org/status/500';
+
+    const queue = new Queue({connection});
+    await queue.push({iri});
+
+    const storer = new DereferenceStorer({
+      logger: pino(),
+      resourceDir,
+    });
+
+    await storer.run({queue});
+
+    // Due to the async queue processing, the retry registration may not have been completed yet
+    await setTimeout(100);
+
+    const items = await queue.getAll();
+
+    expect(items[0]).toMatchObject({
+      iri,
+      retry_count: 1,
+    });
   });
 });

@@ -76,6 +76,7 @@ export class SparqlStorer extends EventEmitter {
     );
 
     for (const item of items) {
+      // Do not 'await processQueue.push(item)' - it processes items sequentially, not in parallel
       processQueue.push(item).catch(async err => {
         this.logger.error(
           err,
