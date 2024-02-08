@@ -11,7 +11,7 @@
     "test:once": "vitest --run"
   },
   "dependencies": {
-    "@triply/triplydb": "6.1.2",
+    "@triply/triplydb": "7.0.2",
     "glob": "10.3.10",
     "tar": "6.2.0",
     "zod": "3.22.4"
