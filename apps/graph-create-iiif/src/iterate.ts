@@ -45,7 +45,7 @@ export const iterate = fromPromise(async ({input}: {input: IterateInput}) => {
 
   const save = async (record: QueueRecord) => {
     const action = fromChangeTypesToAction.get(record.type) as Action;
-    opts.queue.push({iri: record.iri, action});
+    await opts.queue.push({iri: record.iri, action});
   };
   const iteratorQueue = fastq.promise(save, 1); // Concurrency
 
