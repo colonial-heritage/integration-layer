@@ -58,6 +58,11 @@ cli
   .option('--triplydb-api-token <string>', 'TriplyDB API token')
   .option('--triplydb-account <string>', 'TriplyDB account')
   .option('--triplydb-dataset <string>', 'TriplyDB dataset')
+  .option('--triplydb-service <string>', 'TriplyDB service')
+  .option(
+    '--triplydb-service-templates-file [string]',
+    'Templates file for the TriplyDB service'
+  )
   .option(
     '--graph-name <string>',
     'Name of the graph to upload the RDF resources to'

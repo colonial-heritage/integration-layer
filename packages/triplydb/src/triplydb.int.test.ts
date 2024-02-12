@@ -43,8 +43,33 @@ describe('upsertGraphFromDirectory', () => {
   });
 });
 
-describe('restartServices', () => {
-  it('restarts services', async () => {
-    await triplyDb.restartServices();
+describe('restartService', () => {
+  it('restarts SPARQL service', async () => {
+    const triplyDb = await TriplyDb.new({
+      logger: pino(),
+      instanceUrl: env.TRIPLYDB_INSTANCE_URL as string,
+      apiToken: env.TRIPLYDB_API_TOKEN as string,
+      account: env.TRIPLYDB_ACCOUNT_DEVELOPMENT as string,
+      dataset: env.TRIPLYDB_DATASET_KG_DEVELOPMENT as string,
+    });
+
+    await triplyDb.restartService({
+      name: 'kg',
+    });
+  });
+
+  it('restarts search service', async () => {
+    const triplyDb = await TriplyDb.new({
+      logger: pino(),
+      instanceUrl: env.TRIPLYDB_INSTANCE_URL as string,
+      apiToken: env.TRIPLYDB_API_TOKEN as string,
+      account: env.TRIPLYDB_ACCOUNT_DEVELOPMENT as string,
+      dataset: env.TRIPLYDB_DATASET_SG_DEVELOPMENT as string,
+    });
+
+    await triplyDb.restartService({
+      name: 'search',
+      templatesFile: './data/search-graph-templates.json',
+    });
   });
 });

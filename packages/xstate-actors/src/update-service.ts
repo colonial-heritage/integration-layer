@@ -2,29 +2,26 @@ import {TriplyDb} from '@colonial-collections/triplydb';
 import {fromPromise} from 'xstate';
 import {z} from 'zod';
 
-const inputSchema = z.object({
+const updateServiceInputSchema = z.object({
   logger: z.any().refine(val => val !== undefined, {
     message: 'logger must be defined',
   }),
-  filesAndGraphs: z.array(
-    z.object({
-      file: z.string(),
-      graph: z.string(),
-    })
-  ),
+  resourceDir: z.string(),
   triplydbInstanceUrl: z.string(),
   triplydbApiToken: z.string(),
   triplydbAccount: z.string(),
   triplydbDataset: z.string(),
   triplydbService: z.string(),
   triplydbServiceTemplatesFile: z.string().optional(),
+  graphName: z.string(),
+  tempDir: z.string().optional(),
 });
 
-export type UploadInput = z.input<typeof inputSchema>;
+export type UpdateServiceInput = z.input<typeof updateServiceInputSchema>;
 
-export const uploadRdfFiles = fromPromise(
-  async ({input}: {input: UploadInput}) => {
-    const opts = inputSchema.parse(input);
+export const updateService = fromPromise(
+  async ({input}: {input: UpdateServiceInput}) => {
+    const opts = updateServiceInputSchema.parse(input);
 
     const triplyDb = await TriplyDb.new({
       logger: opts.logger,
@@ -34,12 +31,11 @@ export const uploadRdfFiles = fromPromise(
       dataset: opts.triplydbDataset,
     });
 
-    for (const fileAndGraph of opts.filesAndGraphs) {
-      await triplyDb.upsertGraphFromFile({
-        graph: fileAndGraph.graph,
-        file: fileAndGraph.file,
-      });
-    }
+    await triplyDb.upsertGraphFromDirectory({
+      graph: opts.graphName,
+      dir: opts.resourceDir,
+      dirTemp: opts.tempDir,
+    });
 
     await triplyDb.restartService({
       name: opts.triplydbService,

@@ -13,7 +13,7 @@ import {
   registerRun,
   registerRunAndCheckIfRunMustContinue,
   removeObsoleteResources,
-  upload,
+  updateService,
 } from '@colonial-collections/xstate-actors';
 import type {pino} from 'pino';
 import {assign, createActor, setup, toPromise} from 'xstate';
@@ -40,6 +40,8 @@ const inputSchema = z.object({
   triplydbApiToken: z.string(),
   triplydbAccount: z.string(),
   triplydbDataset: z.string(),
+  triplydbService: z.string(),
+  triplydbServiceTemplatesFile: z.string().optional(),
   graphName: z.string(),
   tempDir: z.string().optional(),
 });
@@ -72,7 +74,7 @@ export async function run(input: Input) {
     Else (queue is not empty):
       Update resources by querying a SPARQL endpoint with their IRIs
       If queue is empty:
-        Upload to data platform
+        Sync data to data platform
       Finalize
   */
 
@@ -97,7 +99,7 @@ export async function run(input: Input) {
       registerRun,
       registerRunAndCheckIfRunMustContinue,
       removeObsoleteResources,
-      upload,
+      updateService,
     },
   }).createMachine({
     id: 'main',
@@ -256,9 +258,9 @@ export async function run(input: Input) {
           evaluateQueue: {
             always: [
               {
-                // Only allowed to upload the generated resources if all items
+                // Only allowed to sync the generated resources if all items
                 // in the queue have been processed
-                target: 'upload',
+                target: 'updateService',
                 guard: ({context}) => context.queueSize === 0,
               },
               {
@@ -268,11 +270,11 @@ export async function run(input: Input) {
           },
           // State 5d
           // This action fails if another process is already
-          // uploading resources to the data platform
-          upload: {
+          // syncing resources to the data platform
+          updateService: {
             invoke: {
-              id: 'upload',
-              src: 'upload',
+              id: 'updateService',
+              src: 'updateService',
               input: ({context}) => context,
               onDone: '#main.finalize',
             },

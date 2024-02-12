@@ -21,8 +21,7 @@ const triplydbInstanceUrl = env.TRIPLYDB_INSTANCE_URL as string;
 const triplydbApiToken = env.TRIPLYDB_API_TOKEN as string;
 const triplydbAccount = env.TRIPLYDB_ACCOUNT_DEVELOPMENT as string;
 const triplydbDataset = env.TRIPLYDB_DATASET_KG_DEVELOPMENT as string;
-const triplydbServiceName = 'kg';
-const triplydbServiceType = 'virtuoso';
+const triplydbService = 'kg';
 const graphName = 'https://example.org/graph-create-integration';
 
 beforeEach(async () => {
@@ -44,8 +43,7 @@ describe('run', () => {
       triplydbApiToken,
       triplydbAccount,
       triplydbDataset,
-      triplydbServiceName,
-      triplydbServiceType,
+      triplydbService,
       graphName,
     });
 
@@ -86,8 +84,7 @@ describe('run', () => {
       triplydbApiToken,
       triplydbAccount,
       triplydbDataset,
-      triplydbServiceName,
-      triplydbServiceType,
+      triplydbService,
       graphName,
     });
 
@@ -127,8 +124,7 @@ describe('run', () => {
       triplydbApiToken,
       triplydbAccount,
       triplydbDataset,
-      triplydbServiceName,
-      triplydbServiceType,
+      triplydbService,
       graphName,
     });
   });
@@ -148,8 +144,7 @@ describe('run', () => {
       triplydbApiToken,
       triplydbAccount,
       triplydbDataset,
-      triplydbServiceName,
-      triplydbServiceType,
+      triplydbService,
       graphName,
     });
 
@@ -191,15 +186,14 @@ describe('run', () => {
       triplydbApiToken,
       triplydbAccount,
       triplydbDataset,
-      triplydbServiceName,
-      triplydbServiceType,
+      triplydbService,
       graphName,
     });
 
     expect(await queue.size()).toBe(1);
   });
 
-  it('generates a resource if queue contains a resource and uploads to data platform because queue is now empty (states 1a, 1b, 5a, 5b, 5c, 5d, 6)', async () => {
+  it('generates a resource if queue contains a resource and syncs to data platform because queue is now empty (states 1a, 1b, 5a, 5b, 5c, 5d, 6)', async () => {
     const iri = 'http://vocab.getty.edu/aat/300111999';
 
     const queue = new Queue({connection});
@@ -216,8 +210,7 @@ describe('run', () => {
       triplydbApiToken,
       triplydbAccount,
       triplydbDataset,
-      triplydbServiceName,
-      triplydbServiceType,
+      triplydbService,
       graphName,
     });
   });

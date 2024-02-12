@@ -1,6 +1,5 @@
 {
   "type": "elasticSearch",
-  "name": "search",
   "config": {
     "indexTemplates": [
       {

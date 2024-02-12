@@ -9,7 +9,7 @@ At this moment TriplyDB always indexes fields with datatype "text", even if the 
 ```bash
 curl -H "Authorization: Bearer $TRIPLYDB_API_TOKEN" \
   -H "Content-Type: application/json" \
-  -d @data/search-graph-mappings.json \
+  -d @data/search-graph-templates.json \
   -X POST "$TRIPLYDB_SERVICES_ENDPOINT"
 ```
 

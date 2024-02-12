@@ -1,5 +1,5 @@
 import {getRdfFiles} from './glob.js';
-import {mkdir, stat, unlink} from 'node:fs/promises';
+import {mkdir, readFile, stat, unlink} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import type {pino} from 'pino';
@@ -35,6 +35,13 @@ const upsertGraphFromDirectoryOptionsSchema = z.object({
 export type UpsertGraphFromDirectoryOptions = z.infer<
   typeof upsertGraphFromDirectoryOptionsSchema
 >;
+
+const restartServiceOptionsSchema = z.object({
+  name: z.string(),
+  templatesFile: z.string().optional(), // For Elasticsearch
+});
+
+export type RestartServiceOptions = z.infer<typeof restartServiceOptionsSchema>;
 
 export class TriplyDb {
   private readonly logger: pino.Logger;
@@ -126,25 +133,43 @@ export class TriplyDb {
     await unlink(tarFilename);
   }
 
-  async restartServices() {
-    this.logger.info('Restarting services');
+  async restartService(options: RestartServiceOptions) {
+    const opts = restartServiceOptionsSchema.parse(options);
 
-    const services = this.dataset.getServices();
+    let templates;
+    if (opts.templatesFile !== undefined) {
+      const rawData = await readFile(opts.templatesFile, 'utf-8');
+      templates = JSON.parse(rawData);
+    }
 
-    // Update each service in sequence with the new data in the uploaded RDF files
-    for await (const service of services) {
-      try {
-        await service.update();
-      } catch (err) {
-        const error = err as Error;
-        if (
-          !error.message.includes(
-            'Cannot sync a service that is not out of sync'
-          )
-        ) {
-          throw err;
-        }
+    this.logger.info('Creating new service');
+
+    // Waits until running
+    const newService = await this.dataset.addService(
+      `tmp-service-${Date.now()}`, // Random, unique name
+      templates
+    );
+
+    let oldService;
+    try {
+      oldService = await this.dataset.getService(opts.name);
+      await oldService.rename(`tmp-service-${Date.now()}`); // Random, unique name
+    } catch (err) {
+      const error = err as Error;
+      if (!error.message.includes('It does not exist')) {
+        throw err;
       }
+    }
+
+    await newService.rename(opts.name);
+
+    try {
+      if (oldService !== undefined) {
+        this.logger.info('Deleting old service');
+        await oldService.delete();
+      }
+    } catch (err) {
+      this.logger.error(err, 'Failed to delete old service');
     }
   }
 }

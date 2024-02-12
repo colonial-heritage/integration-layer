@@ -23,8 +23,7 @@ const triplydbInstanceUrl = env.TRIPLYDB_INSTANCE_URL as string;
 const triplydbApiToken = env.TRIPLYDB_API_TOKEN as string;
 const triplydbAccount = env.TRIPLYDB_ACCOUNT_DEVELOPMENT as string;
 const triplydbDataset = env.TRIPLYDB_DATASET_KG_DEVELOPMENT as string;
-const triplydbServiceName = 'kg';
-const triplydbServiceType = 'virtuoso';
+const triplydbService = 'kg';
 const graphName = 'https://example.org/graph-create-geonames-integration';
 
 beforeEach(async () => {
@@ -45,8 +44,7 @@ describe('run', () => {
       triplydbApiToken,
       triplydbAccount,
       triplydbDataset,
-      triplydbServiceName,
-      triplydbServiceType,
+      triplydbService,
       graphName,
     });
 
@@ -101,8 +99,7 @@ describe('run', () => {
       triplydbApiToken,
       triplydbAccount,
       triplydbDataset,
-      triplydbServiceName,
-      triplydbServiceType,
+      triplydbService,
       graphName,
     });
 
@@ -132,8 +129,7 @@ describe('run', () => {
       triplydbApiToken,
       triplydbAccount,
       triplydbDataset,
-      triplydbServiceName,
-      triplydbServiceType,
+      triplydbService,
       graphName,
     });
   });
@@ -152,8 +148,7 @@ describe('run', () => {
       triplydbApiToken,
       triplydbAccount,
       triplydbDataset,
-      triplydbServiceName,
-      triplydbServiceType,
+      triplydbService,
       graphName,
     });
 
@@ -210,8 +205,7 @@ describe('run', () => {
       triplydbApiToken,
       triplydbAccount,
       triplydbDataset,
-      triplydbServiceName,
-      triplydbServiceType,
+      triplydbService,
       graphName,
     });
 
@@ -241,8 +235,7 @@ describe('run', () => {
       triplydbApiToken,
       triplydbAccount,
       triplydbDataset,
-      triplydbServiceName,
-      triplydbServiceType,
+      triplydbService,
       graphName,
     });
 
@@ -279,8 +272,7 @@ describe('run', () => {
       triplydbApiToken,
       triplydbAccount,
       triplydbDataset,
-      triplydbServiceName,
-      triplydbServiceType,
+      triplydbService,
       graphName,
     });
 
@@ -312,8 +304,7 @@ describe('run', () => {
       triplydbApiToken,
       triplydbAccount,
       triplydbDataset,
-      triplydbServiceName,
-      triplydbServiceType,
+      triplydbService,
       graphName,
     });
 
@@ -324,7 +315,7 @@ describe('run', () => {
     expect(await queue.size()).toBe(1);
   });
 
-  it('dereferences a country if queue contains a country and uploads to data platform because queue does not contain countries anymore (states 1a, 1b, 1c, 7a, 7b, 7c, 7d, 8)', async () => {
+  it('dereferences a country if queue contains a country and syncs to data platform because queue does not contain countries anymore (states 1a, 1b, 1c, 7a, 7b, 7c, 7d, 8)', async () => {
     const iri = 'https://sws.geonames.org/953987/';
 
     const queue = new Queue({connection});
@@ -341,8 +332,7 @@ describe('run', () => {
       triplydbApiToken,
       triplydbAccount,
       triplydbDataset,
-      triplydbServiceName,
-      triplydbServiceType,
+      triplydbService,
       graphName,
     });
   });
