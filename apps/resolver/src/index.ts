@@ -1,19 +1,15 @@
 import {api} from './api.js';
 import {serve} from '@hono/node-server';
+import {handle} from '@hono/node-server/vercel';
 import {Hono} from 'hono';
-import {getRuntimeKey} from 'hono/adapter';
-import {handle} from 'hono/vercel';
-
-export const runtime = 'edge';
 
 const app = new Hono();
 app.route('/', api);
 
-export const GET = handle(app);
-
-console.log('Runtime is ', getRuntimeKey());
-
 // For local development
-if (getRuntimeKey() === 'node') {
+if (process.env.NODE_ENV === 'development') {
   serve(app);
 }
+
+// For Vercel Serverless Function
+export default handle(app);
