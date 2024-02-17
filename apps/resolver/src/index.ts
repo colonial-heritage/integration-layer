@@ -4,18 +4,16 @@ import {Hono} from 'hono';
 import {getRuntimeKey} from 'hono/adapter';
 import {handle} from 'hono/vercel';
 
-export const config = {
-  runtime: 'edge',
-};
+export const runtime = 'edge';
 
 const app = new Hono();
 app.route('/', api);
 
-// export const GET = handle(app);
+export const GET = handle(app);
+
+console.log('Runtime is ', getRuntimeKey());
 
 // For local development
 if (getRuntimeKey() === 'node') {
   serve(app);
 }
-
-export default handle(app);
