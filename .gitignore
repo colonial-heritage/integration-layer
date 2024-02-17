@@ -23,3 +23,7 @@ yarn-error.log*
 
 # Turbo
 .turbo
+
+# Vercel
+apps/resolver/api/*
+!apps/resolver/api/index.js
