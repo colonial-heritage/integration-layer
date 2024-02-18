@@ -43,7 +43,7 @@ cli
   )
   .option(
     '--dereference-batch-size [number]',
-    'Number of IRIs from the queue to process'
+    'Number of IRIs from the queue to process. If not set, process the entire queue'
   )
   .action(async (input: Input) => {
     import('./run.js').then(action => action.run(input));

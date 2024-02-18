@@ -109,7 +109,7 @@ export async function run(input: Input) {
     },
   }).createMachine({
     id: 'main',
-    initial: 'getQueueSize',
+    initial: 'getInitialQueueSize',
     context: ({input}) => ({
       ...input,
       startTime: Date.now(),
@@ -122,7 +122,7 @@ export async function run(input: Input) {
     }),
     states: {
       // State 1a
-      getQueueSize: {
+      getInitialQueueSize: {
         invoke: {
           id: 'getQueueSize',
           src: 'getQueueSize',
@@ -241,7 +241,6 @@ export async function run(input: Input) {
           evaluateIfResourcesMustBeUpdatedNow: {
             always: [
               {
-                // Check whether all (remaining) resources in the queue must be updated now
                 target: '#main.updateResources',
                 guard: ({context}) =>
                   context.generateBatchSize === undefined ||

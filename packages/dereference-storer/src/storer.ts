@@ -29,7 +29,7 @@ const runOptionsSchema = z.object({
   type: z.string().optional(),
   numberOfConcurrentRequests: z.number().min(1).default(1),
   waitBetweenRequests: z.number().min(0).optional(),
-  batchSize: z.number().min(1).default(1000),
+  batchSize: z.number().min(1).optional(), // Undefined if the entire queue must be processed
 });
 
 export type RunOptions = z.input<typeof runOptionsSchema>;

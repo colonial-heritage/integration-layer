@@ -20,12 +20,13 @@ beforeEach(async () => {
 
 describe('run', () => {
   // Time-consuming test
-  it('registers run and collects IRIs of resources if queue is empty (states 1, 2, 3, 4, 5, 7)', async () => {
+  it('registers run and collects IRIs of resources if queue is empty (states 1, 2, 3, 4, 5, 6, 7, 9)', async () => {
     await run({
       resourceDir,
       dataFile,
       iterateEndpointUrl:
         'https://iiif.bodleian.ox.ac.uk/iiif/activity/all-changes',
+      dereferenceBatchSize: 10,
     });
 
     const queue = new Queue({connection});
@@ -36,7 +37,7 @@ describe('run', () => {
     expect(iris.length).toBeGreaterThanOrEqual(20441);
   });
 
-  it('registers run and collects IRIs of resources changed since the last run if queue is empty (states 1, 2, 3, 4, 5, 7)', async () => {
+  it('registers run and collects IRIs of resources changed since the last run if queue is empty (states 1, 2, 3, 4, 5, 6, 7, 9)', async () => {
     const runs = new Runs({connection});
     await runs.save({created_at: '2024-01-01'});
 
@@ -45,6 +46,7 @@ describe('run', () => {
       dataFile,
       iterateEndpointUrl:
         'https://iiif.bodleian.ox.ac.uk/iiif/activity/all-changes',
+      dereferenceBatchSize: 10,
     });
 
     const queue = new Queue({connection});
@@ -55,7 +57,7 @@ describe('run', () => {
     expect(iris.length).toBeGreaterThanOrEqual(23);
   });
 
-  it('registers run and does not collect IRIs of resources because no resources have been changed since the last run (states 1, 2, 3, 4, 5, 7)', async () => {
+  it('registers run and does not collect IRIs of resources because no resources have been changed since the last run (states 1, 2, 3, 4, 5, 6, 7, 9)', async () => {
     const runs = new Runs({connection});
     await runs.save(); // Last run = now
 
@@ -64,6 +66,7 @@ describe('run', () => {
       dataFile,
       iterateEndpointUrl:
         'https://iiif.bodleian.ox.ac.uk/iiif/activity/all-changes',
+      dereferenceBatchSize: 10,
     });
 
     const queue = new Queue({connection});
@@ -73,7 +76,7 @@ describe('run', () => {
 });
 
 describe('run', () => {
-  it('dereferences a resource if queue contains a resource (states 1, 2, 6, 7)', async () => {
+  it('dereferences a resource if queue contains a resource (states 1, 2, 8, 9)', async () => {
     const iri1 =
       'https://iiif.bodleian.ox.ac.uk/iiif/manifest/cc6f7f04-7236-40e2-8327-520158dfc7d5.json';
     const iri2 =

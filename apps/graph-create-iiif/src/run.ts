@@ -35,7 +35,7 @@ const inputSchema = z.object({
   dereferenceWaitBetweenRequests: z.number().default(100),
   dereferenceTimeoutPerRequest: z.number().optional(),
   dereferenceNumberOfConcurrentRequests: z.number().default(20), // ~ single-threaded max performance
-  dereferenceBatchSize: z.number().default(50000),
+  dereferenceBatchSize: z.number().optional(), // If undefined: process the entire queue
 });
 
 export type Input = z.input<typeof inputSchema>;
@@ -55,6 +55,9 @@ export async function run(input: Input) {
       Get last run
       Register new run
       Collect IRIs
+      Check batch size
+      If batch size of queue is not set or greater than the queue size:
+        Go to 'Else'
       Finalize
     Else (queue is not empty):
       Process collected IRIs: dereference or delete
@@ -87,7 +90,7 @@ export async function run(input: Input) {
     },
   }).createMachine({
     id: 'main',
-    initial: 'getQueueSize',
+    initial: 'getInitialQueueSize',
     context: ({input}) => ({
       ...input,
       startTime: Date.now(),
@@ -100,7 +103,7 @@ export async function run(input: Input) {
     }),
     states: {
       // State 1
-      getQueueSize: {
+      getInitialQueueSize: {
         invoke: {
           id: 'getQueueSize',
           src: 'getQueueSize',
@@ -160,10 +163,39 @@ export async function run(input: Input) {
             credentials: context.iterateCredentials,
             waitBetweenRequests: context.iterateWaitBetweenRequests,
           }),
-          onDone: 'finalize', // TBD: add option to dereference immediately instead of on the next run?
+          onDone: 'getAfterIterateQueueSize', // TBD: add option to dereference immediately instead of on the next run?
         },
       },
       // State 6
+      // The 'iterate' state has changed the initial queue size - fetch it again
+      getAfterIterateQueueSize: {
+        invoke: {
+          id: 'getQueueSize',
+          src: 'getQueueSize',
+          input: ({context}) => context,
+          onDone: {
+            target: 'evaluateIfResourcesMustBeDereferencedNow',
+            actions: assign({
+              queueSize: ({event}) => event.output,
+            }),
+          },
+        },
+      },
+      // State 7
+      evaluateIfResourcesMustBeDereferencedNow: {
+        always: [
+          {
+            target: 'dereference',
+            guard: ({context}) =>
+              context.dereferenceBatchSize === undefined ||
+              context.dereferenceBatchSize >= context.queueSize,
+          },
+          {
+            target: 'finalize',
+          },
+        ],
+      },
+      // State 8
       dereference: {
         invoke: {
           id: 'dereference',
@@ -183,7 +215,7 @@ export async function run(input: Input) {
           onDone: 'finalize',
         },
       },
-      // State 7
+      // State 9
       finalize: {
         invoke: {
           id: 'finalize',
