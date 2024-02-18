@@ -31,14 +31,14 @@ beforeEach(async () => {
 });
 
 describe('run', () => {
-  it('registers run and collects IRIs of resources if queue is empty (states 1a, 1b, 3, 4a, 4b, 6)', async () => {
+  it('registers run, collects IRIs, generates all resources and syncs to data platform because batch size is not set (states 1a, 1b, 3, 4a, 4b, 4c, 4d, 5a, 5b, 5c, 5d, 6)', async () => {
     await run({
       resourceDir,
       dataFile,
       iterateEndpointUrl: 'https://dbpedia.org/sparql',
-      iterateQueryFile: './fixtures/queries/iterate-john-mccallum.rq',
-      generateEndpointUrl: '', // Unused by the test
-      generateQueryFile: '', // Unused by the test
+      iterateQueryFile: './fixtures/queries/iterate-jack-dowding.rq',
+      generateEndpointUrl: 'https://dbpedia.org/sparql',
+      generateQueryFile: './fixtures/queries/generate-dbpedia.rq',
       triplydbInstanceUrl,
       triplydbApiToken,
       triplydbAccount,
@@ -48,22 +48,76 @@ describe('run', () => {
     });
 
     const queue = new Queue({connection});
-    const items = await queue.getAll();
-    const iris = items.map(item => item.iri);
+
+    expect(await queue.size()).toBe(0);
 
     // Changes if the source data changes
-    expect(iris).toEqual(
-      expect.arrayContaining([
-        'http://dbpedia.org/resource/John_McCallum_(sports_writer)',
-        'http://dbpedia.org/resource/Jack_Dowding_(footballer)',
-        'http://dbpedia.org/resource/John_McCallum',
-        'http://dbpedia.org/resource/John_McCallum_(Australian_politician)',
-        'http://dbpedia.org/resource/John_McCallum_(actor)',
-      ])
-    );
+    const sampleIri = 'http://dbpedia.org/resource/Jack_Dowding_(footballer)';
+
+    // New resource about 'John Dowding' should have been created
+    const filestore = new Filestore({dir: resourceDir});
+    const pathOfSampleIri = filestore.createPathFromIri(sampleIri);
+
+    expect(existsSync(pathOfSampleIri)).toBe(true);
   });
 
-  it('registers run and removes obsolete resources if queue is empty (states 1a, 1b, 3, 4a, 4b, 6)', async () => {
+  it('registers run, collects IRIs, generates all resources and syncs to data platform because batch size >= queue size (states 1a, 1b, 3, 4a, 4b, 4c, 4d, 5a, 5b, 5c, 5d, 6)', async () => {
+    await run({
+      resourceDir,
+      dataFile,
+      iterateEndpointUrl: 'https://dbpedia.org/sparql',
+      iterateQueryFile: './fixtures/queries/iterate-jack-dowding.rq',
+      generateEndpointUrl: 'https://dbpedia.org/sparql',
+      generateQueryFile: './fixtures/queries/generate-dbpedia.rq',
+      generateBatchSize: 1,
+      triplydbInstanceUrl,
+      triplydbApiToken,
+      triplydbAccount,
+      triplydbDataset,
+      triplydbService,
+      graphName,
+    });
+
+    const queue = new Queue({connection});
+
+    expect(await queue.size()).toBe(0);
+
+    // Changes if the source data changes
+    const sampleIri = 'http://dbpedia.org/resource/Jack_Dowding_(footballer)';
+
+    // New resource about 'John Dowding' should have been created
+    const filestore = new Filestore({dir: resourceDir});
+    const pathOfSampleIri = filestore.createPathFromIri(sampleIri);
+
+    expect(existsSync(pathOfSampleIri)).toBe(true);
+  });
+});
+
+describe('run', () => {
+  it('registers run and collects IRIs if queue is empty (states 1a, 1b, 3, 4a, 4b, 4c, 4d, 6)', async () => {
+    await run({
+      resourceDir,
+      dataFile,
+      iterateEndpointUrl: 'https://dbpedia.org/sparql',
+      iterateQueryFile: './fixtures/queries/iterate-john-mccallum.rq',
+      generateEndpointUrl: 'https://dbpedia.org/sparql',
+      generateQueryFile: './fixtures/queries/generate-dbpedia.rq',
+      generateBatchSize: 3,
+      triplydbInstanceUrl,
+      triplydbApiToken,
+      triplydbAccount,
+      triplydbDataset,
+      triplydbService,
+      graphName,
+    });
+
+    const queue = new Queue({connection});
+
+    // Changes if the source data changes
+    expect(await queue.size()).toBe(5); // Remaining items
+  });
+
+  it('registers run and removes obsolete resources if queue is empty (states 1a, 1b, 3, 4a, 4b, 4c, 4d, 6)', async () => {
     // Copy obsolete resources
     await cp('./fixtures/dbpedia', resourceDir, {recursive: true});
 
@@ -78,8 +132,8 @@ describe('run', () => {
       dataFile,
       iterateEndpointUrl: 'https://dbpedia.org/sparql',
       iterateQueryFile: './fixtures/queries/iterate-jack-dowding.rq',
-      generateEndpointUrl: '', // Unused by the test
-      generateQueryFile: '', // Unused by the test
+      generateEndpointUrl: 'https://dbpedia.org/sparql',
+      generateQueryFile: './fixtures/queries/generate-dbpedia.rq',
       triplydbInstanceUrl,
       triplydbApiToken,
       triplydbAccount,
@@ -89,13 +143,9 @@ describe('run', () => {
     });
 
     const queue = new Queue({connection});
-    const items = await queue.getAll();
-    const iris = items.map(item => item.iri);
 
     // Changes if the source data changes
-    expect(iris).toEqual([
-      'http://dbpedia.org/resource/Jack_Dowding_(footballer)',
-    ]);
+    expect(await queue.size()).toBe(0); // Remaining items
 
     // Obsolete resource about 'John McCallum' should have been removed
     const filestore = new Filestore({dir: resourceDir});
@@ -129,7 +179,7 @@ describe('run', () => {
     });
   });
 
-  it('registers run and continues if it must (states 1a, 1b, 2a, 2b, 4a, 4b, 6)', async () => {
+  it('registers run and continues if it must (states 1a, 1b, 2a, 2b, 4a, 4b, 4c, 4d, 6)', async () => {
     await run({
       resourceDir,
       dataFile,
@@ -138,8 +188,9 @@ describe('run', () => {
         './fixtures/queries/check-must-continue-run-dbpedia.rq',
       iterateEndpointUrl: 'https://dbpedia.org/sparql',
       iterateQueryFile: './fixtures/queries/iterate-john-mccallum.rq',
-      generateEndpointUrl: '', // Unused by the test
-      generateQueryFile: '', // Unused by the test
+      generateEndpointUrl: 'https://dbpedia.org/sparql',
+      generateQueryFile: './fixtures/queries/generate-dbpedia.rq',
+      generateBatchSize: 3,
       triplydbInstanceUrl,
       triplydbApiToken,
       triplydbAccount,
@@ -149,24 +200,14 @@ describe('run', () => {
     });
 
     const queue = new Queue({connection});
-    const items = await queue.getAll();
-    const iris = items.map(item => item.iri);
 
     // Changes if the source data changes
-    expect(iris).toEqual(
-      expect.arrayContaining([
-        'http://dbpedia.org/resource/John_McCallum_(sports_writer)',
-        'http://dbpedia.org/resource/Jack_Dowding_(footballer)',
-        'http://dbpedia.org/resource/John_McCallum',
-        'http://dbpedia.org/resource/John_McCallum_(Australian_politician)',
-        'http://dbpedia.org/resource/John_McCallum_(actor)',
-      ])
-    );
+    expect(await queue.size()).toBe(5); // Remaining items
   });
 });
 
 describe('run', () => {
-  it('generates a resource if queue contains a resource (states 1a, 1b, 5a, 5b, 5c, 6)', async () => {
+  it('generates a resource if queue contains a resource and does not sync to data platform because queue is not empty (states 1a, 1b, 5a, 5b, 5c, 6)', async () => {
     const iri1 = 'http://vocab.getty.edu/aat/300111999';
     const iri2 = 'http://vocab.getty.edu/aat/300027200';
 
@@ -190,7 +231,7 @@ describe('run', () => {
       graphName,
     });
 
-    expect(await queue.size()).toBe(1);
+    expect(await queue.size()).toBe(1); // Remaining items
   });
 
   it('generates a resource if queue contains a resource and syncs to data platform because queue is now empty (states 1a, 1b, 5a, 5b, 5c, 5d, 6)', async () => {
@@ -213,5 +254,7 @@ describe('run', () => {
       triplydbService,
       graphName,
     });
+
+    expect(await queue.size()).toBe(0); // Remaining items
   });
 });

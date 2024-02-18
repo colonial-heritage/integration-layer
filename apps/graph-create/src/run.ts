@@ -35,7 +35,7 @@ const inputSchema = z.object({
   generateWaitBetweenRequests: z.number().default(100),
   generateTimeoutPerRequest: z.number().optional(),
   generateNumberOfConcurrentRequests: z.number().default(20), // ~ single-threaded max performance
-  generateBatchSize: z.number().default(50000),
+  generateBatchSize: z.number().optional(), // If undefined: process the entire queue
   triplydbInstanceUrl: z.string(),
   triplydbApiToken: z.string(),
   triplydbAccount: z.string(),
@@ -65,11 +65,17 @@ export async function run(input: Input) {
       If run must continue:
         Collect IRIs of resources
         Remove obsolete resources
+        Check batch size
+        If batch size of queue is not set or greater than the queue size:
+          Go to 'Update resources by querying a SPARQL endpoint with their IRIs'
       Finalize
     Else if queue is empty:
       Register run
       Collect IRIs of resources
       Remove obsolete resources
+      Check batch size
+      If batch size is not set or greater than the queue size:
+        Go to 'Update resources by querying a SPARQL endpoint with their IRIs'
       Finalize
     Else (queue is not empty):
       Update resources by querying a SPARQL endpoint with their IRIs
@@ -213,8 +219,38 @@ export async function run(input: Input) {
               id: 'removeObsoleteResources',
               src: 'removeObsoleteResources',
               input: ({context}) => context,
-              onDone: '#main.finalize',
+              onDone: 'getQueueSize',
             },
+          },
+          // State 4c
+          // The 'iterate' state has changed the initial queue size - fetch it again
+          getQueueSize: {
+            invoke: {
+              id: 'getQueueSize',
+              src: 'getQueueSize',
+              input: ({context}) => context,
+              onDone: {
+                target: 'evaluateIfResourcesMustBeUpdatedNow',
+                actions: assign({
+                  queueSize: ({event}) => event.output,
+                }),
+              },
+            },
+          },
+          // State 4d
+          evaluateIfResourcesMustBeUpdatedNow: {
+            always: [
+              {
+                // Check whether all (remaining) resources in the queue must be updated now
+                target: '#main.updateResources',
+                guard: ({context}) =>
+                  context.generateBatchSize === undefined ||
+                  context.generateBatchSize >= context.queueSize,
+              },
+              {
+                target: '#main.finalize',
+              },
+            ],
           },
         },
       },

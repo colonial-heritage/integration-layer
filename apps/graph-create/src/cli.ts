@@ -52,7 +52,7 @@ cli
   )
   .option(
     '--generate-batch-size [number]',
-    'Number of IRIs from the queue to process'
+    'Number of IRIs from the queue to process. If not set, process the entire queue'
   )
   .option('--triplydb-instance-url <string>', 'TriplyDB instance URL')
   .option('--triplydb-api-token <string>', 'TriplyDB API token')
