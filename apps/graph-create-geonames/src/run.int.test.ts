@@ -33,13 +33,14 @@ beforeEach(async () => {
 });
 
 describe('run', () => {
-  it('registers run and collects IRIs of locations if queue is empty (states 1a, 1b, 1c, 3, 4a, 4b, 8)', async () => {
+  it('registers run and collects IRIs of locations if queue is empty (states 1a, 1b, 1c, 3, 4a, 4b, 4c, 4d, 8)', async () => {
     await run({
       resourceDir,
       dataFile,
       iterateEndpointUrl: 'https://dbpedia.org/sparql',
       iterateLocationsQueryFile: './fixtures/queries/iterate-locations.rq',
       iterateCountriesQueryFile: '', // Unused by the test
+      dereferenceBatchSize: 10,
       triplydbInstanceUrl,
       triplydbApiToken,
       triplydbAccount,
@@ -49,38 +50,12 @@ describe('run', () => {
     });
 
     const queue = new Queue({connection});
-    const items = await queue.getAll({type: 'locations'});
-    const iris = items.map(item => item.iri);
 
-    // This can change if the source data changes
-    expect(iris).toEqual(
-      expect.arrayContaining([
-        'http://sws.geonames.org/1547220/',
-        'http://sws.geonames.org/2759794/',
-        'http://sws.geonames.org/2750375/',
-        'http://sws.geonames.org/5095182/',
-        'http://sws.geonames.org/3376762/',
-        'http://sws.geonames.org/4262053/',
-        'http://sws.geonames.org/7648384/',
-        'http://sws.geonames.org/4744357/',
-        'http://sws.geonames.org/6544881/',
-        'http://sws.geonames.org/5323799/',
-        'http://sws.geonames.org/4374800/',
-        'http://sws.geonames.org/3383434/',
-        'http://sws.geonames.org/2759793/',
-        'http://sws.geonames.org/1651465/',
-        'http://sws.geonames.org/2759788/',
-        'http://sws.geonames.org/5145733/',
-        'http://sws.geonames.org/7648382/',
-        'http://sws.geonames.org/5264372/',
-        'http://sws.geonames.org/2759787/',
-        'http://sws.geonames.org/1622622/',
-        'http://sws.geonames.org/1022857/',
-      ])
-    );
+    // Changes if the source data changes
+    expect(await queue.size({type: 'locations'})).toBe(21); // Remaining items
   });
 
-  it('registers run and removes obsolete resources if queue is empty (states 1a, 1b, 1c, 3, 4a, 4b, 8)', async () => {
+  it('registers run and removes obsolete resources if queue is empty (states 1a, 1b, 1c, 3, 4a, 4b, 4c, 4d, 8)', async () => {
     // Copy obsolete locations
     await cp('./fixtures/geonames/locations', locationsDir, {recursive: true});
 
@@ -95,6 +70,7 @@ describe('run', () => {
       iterateEndpointUrl: 'https://dbpedia.org/sparql',
       iterateLocationsQueryFile: './fixtures/queries/iterate-locations.rq',
       iterateCountriesQueryFile: '', // Unused by the test
+      dereferenceBatchSize: 10,
       triplydbInstanceUrl,
       triplydbApiToken,
       triplydbAccount,
@@ -102,6 +78,11 @@ describe('run', () => {
       triplydbService,
       graphName,
     });
+
+    const queue = new Queue({connection});
+
+    // Changes if the source data changes
+    expect(await queue.size({type: 'locations'})).toBe(21); // Remaining items
 
     // Obsolete resource about 'Delft' should have been deleted
     const filestore = new Filestore({dir: locationsDir});
@@ -134,7 +115,7 @@ describe('run', () => {
     });
   });
 
-  it('registers run and continues if it must (states 1a, 1b, 1c, 2a, 2b, 4a, 4b, 8)', async () => {
+  it('registers run and continues if it must (states 1a, 1b, 1c, 2a, 2b, 4a, 4b, 4c, 4d, 8)', async () => {
     await run({
       resourceDir,
       dataFile,
@@ -144,6 +125,7 @@ describe('run', () => {
       iterateEndpointUrl: 'https://dbpedia.org/sparql',
       iterateLocationsQueryFile: './fixtures/queries/iterate-locations.rq',
       iterateCountriesQueryFile: '', // Unused by the test
+      dereferenceBatchSize: 10,
       triplydbInstanceUrl,
       triplydbApiToken,
       triplydbAccount,
@@ -153,35 +135,9 @@ describe('run', () => {
     });
 
     const queue = new Queue({connection});
-    const items = await queue.getAll({type: 'locations'});
-    const iris = items.map(item => item.iri);
 
-    // This can change if the source data changes
-    expect(iris).toEqual(
-      expect.arrayContaining([
-        'http://sws.geonames.org/1547220/',
-        'http://sws.geonames.org/2759794/',
-        'http://sws.geonames.org/2750375/',
-        'http://sws.geonames.org/5095182/',
-        'http://sws.geonames.org/3376762/',
-        'http://sws.geonames.org/4262053/',
-        'http://sws.geonames.org/7648384/',
-        'http://sws.geonames.org/4744357/',
-        'http://sws.geonames.org/6544881/',
-        'http://sws.geonames.org/5323799/',
-        'http://sws.geonames.org/4374800/',
-        'http://sws.geonames.org/3383434/',
-        'http://sws.geonames.org/2759793/',
-        'http://sws.geonames.org/1651465/',
-        'http://sws.geonames.org/2759788/',
-        'http://sws.geonames.org/5145733/',
-        'http://sws.geonames.org/7648382/',
-        'http://sws.geonames.org/5264372/',
-        'http://sws.geonames.org/2759787/',
-        'http://sws.geonames.org/1622622/',
-        'http://sws.geonames.org/1022857/',
-      ])
-    );
+    // Changes if the source data changes
+    expect(await queue.size({type: 'locations'})).toBe(21); // Remaining items
   });
 });
 
@@ -218,7 +174,7 @@ describe('run', () => {
 });
 
 describe('run', () => {
-  it('collects IRIs of countries if queue does not contain locations (states 1a, 1b, 1c, 3, 5a, 5b, 5c, 6a, 6b, 8)', async () => {
+  it('collects IRIs of countries if queue does not contain locations (states 1a, 1b, 1c, 3, 5a, 5b, 5c, 6a, 6b, 6c, 6d, 8)', async () => {
     const iri = 'https://sws.geonames.org/2759794/';
 
     const queue = new Queue({connection});
@@ -239,16 +195,11 @@ describe('run', () => {
       graphName,
     });
 
-    const items = await queue.getAll({type: 'countries'});
-    const iris = items.map(item => item.iri);
-
     // Changes if the source data changes
-    expect(iris).toEqual(
-      expect.arrayContaining(['https://sws.geonames.org/2750405/'])
-    );
+    expect(await queue.size({type: 'countries'})).toBe(0); // Remaining items
   });
 
-  it('removes obsolete countries if queue does not contain locations (states 1a, 1b, 1c, 3, 5a, 5b, 5c, 6a, 6b, 8)', async () => {
+  it('removes obsolete countries if queue does not contain locations (states 1a, 1b, 1c, 3, 5a, 5b, 5c, 6a, 6b, 6c, 6d, 8)', async () => {
     // Copy obsolete countries
     await cp('./fixtures/geonames/countries', countriesDir, {recursive: true});
 
@@ -268,6 +219,7 @@ describe('run', () => {
       iterateEndpointUrl: 'https://dbpedia.org/sparql',
       iterateLocationsQueryFile: '', // Unused by the test
       iterateCountriesQueryFile: './fixtures/queries/iterate-countries.rq',
+      dereferenceBatchSize: 1,
       triplydbInstanceUrl,
       triplydbApiToken,
       triplydbAccount,
@@ -275,6 +227,9 @@ describe('run', () => {
       triplydbService,
       graphName,
     });
+
+    // Changes if the source data changes
+    expect(await queue.size({type: 'countries'})).toBe(0); // Remaining items
 
     // Obsolete resource about 'Germany' should have been removed
     const filestore = new Filestore({dir: countriesDir});
@@ -285,7 +240,7 @@ describe('run', () => {
 });
 
 describe('run', () => {
-  it('dereferences a country if queue contains a country (states 1a, 1b, 1c, 7a, 7b, 7c, 8)', async () => {
+  it('dereferences a country if queue contains a country and does not sync to data platform because queue is not empty (states 1a, 1b, 1c, 7a, 7b, 7c, 8)', async () => {
     const iri1 = 'https://sws.geonames.org/953987/';
     const iri2 = 'https://sws.geonames.org/6252001/';
 

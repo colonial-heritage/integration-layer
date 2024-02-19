@@ -23,6 +23,7 @@ Creates a graph by dereferencing GeoNames IRIs
       --triplydb-api-token "$TRIPLYDB_API_TOKEN" \
       --triplydb-account "$TRIPLYDB_ACCOUNT_DEVELOPMENT" \
       --triplydb-dataset "$TRIPLYDB_DATASET_KG_DEVELOPMENT" \
+      --triplydb-service "kg" \
       --graph-name "https://example.org/geonames" \
       --temp-dir ./tmp
 
@@ -48,5 +49,6 @@ Creates a graph by dereferencing GeoNames IRIs
       --triplydb-api-token "$TRIPLYDB_API_TOKEN" \
       --triplydb-account "$TRIPLYDB_ACCOUNT_DEVELOPMENT" \
       --triplydb-dataset "$TRIPLYDB_DATASET_KG_DEVELOPMENT" \
+      --triplydb-service "kg" \
       --graph-name "https://example.org/geonames" \
       --temp-dir ./tmp

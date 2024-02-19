@@ -44,7 +44,7 @@ const inputSchema = z.object({
   dereferenceWaitBetweenRequests: z.number().default(100),
   dereferenceTimeoutPerRequest: z.number().optional(),
   dereferenceNumberOfConcurrentRequests: z.number().default(5),
-  dereferenceBatchSize: z.number().default(750), // Mind the hourly and daily limits of GeoNames
+  dereferenceBatchSize: z.number().optional(), // If undefined: process the entire queue. Mind the hourly and daily limits of GeoNames!
   triplydbInstanceUrl: z.string(),
   triplydbApiToken: z.string(),
   triplydbAccount: z.string(),
@@ -75,17 +75,26 @@ export async function run(input: Input) {
       If run must continue:
         Collect IRIs of locations
         Remove obsolete locations
+        Check batch size
+        If batch size of queue is not set or greater than the queue size:
+          Go to 'Update locations by dereferencing IRIs'
       Finalize
     Else if locations queue is empty and countries queue is empty: (start a new run)
       Register run
       Collect IRIs of locations
       Remove obsolete locations
+      Check batch size
+      If batch size of queue is not set or greater than the queue size:
+        Go to 'Update locations by dereferencing IRIs'
       Finalize
     Else if locations queue is not empty:
       Update locations by dereferencing IRIs
       If locations queue is empty:
         Collect IRIs of countries
         Remove obsolete countries
+        Check batch size
+        If batch size of queue is not set or greater than the queue size:
+          Go to 'Update countries by dereferencing IRIs'
       Finalize
     Else if countries queue is not empty:
       Update countries by dereferencing IRIs
@@ -275,8 +284,37 @@ export async function run(input: Input) {
                 type: 'locations',
                 resourceDir: context.locationsResourceDir,
               }),
-              onDone: '#main.finalize',
+              onDone: 'getLocationsQueueSize',
             },
+          },
+          // State 4c
+          // The 'iterateLocations' state has changed the initial queue size - fetch it again
+          getLocationsQueueSize: {
+            invoke: {
+              id: 'getQueueSize',
+              src: 'getQueueSize',
+              input: ({context}) => context,
+              onDone: {
+                target: 'evaluateIfLocationsMustBeUpdatedNow',
+                actions: assign({
+                  locationsQueueSize: ({event}) => event.output,
+                }),
+              },
+            },
+          },
+          // State 4d
+          evaluateIfLocationsMustBeUpdatedNow: {
+            always: [
+              {
+                target: '#main.updateLocations',
+                guard: ({context}) =>
+                  context.dereferenceBatchSize === undefined ||
+                  context.dereferenceBatchSize >= context.locationsQueueSize,
+              },
+              {
+                target: '#main.finalize',
+              },
+            ],
           },
         },
       },
@@ -338,10 +376,10 @@ export async function run(input: Input) {
       },
       // State 6
       initUpdateOfCountries: {
-        initial: 'fileIterate',
+        initial: 'iterateCountries',
         states: {
           // State 6a
-          fileIterate: {
+          iterateCountries: {
             invoke: {
               id: 'fileIterate',
               src: 'fileIterate',
@@ -366,8 +404,37 @@ export async function run(input: Input) {
                 type: 'countries',
                 resourceDir: context.countriesResourceDir,
               }),
-              onDone: '#main.finalize',
+              onDone: 'getCountriesQueueSize',
             },
+          },
+          // State 6c
+          // The 'iterateCountries' state has changed the initial queue size - fetch it again
+          getCountriesQueueSize: {
+            invoke: {
+              id: 'getQueueSize',
+              src: 'getQueueSize',
+              input: ({context}) => context,
+              onDone: {
+                target: 'evaluateIfCountriesMustBeUpdatedNow',
+                actions: assign({
+                  countriesQueueSize: ({event}) => event.output,
+                }),
+              },
+            },
+          },
+          // State 6d
+          evaluateIfCountriesMustBeUpdatedNow: {
+            always: [
+              {
+                target: '#main.updateCountries',
+                guard: ({context}) =>
+                  context.dereferenceBatchSize === undefined ||
+                  context.dereferenceBatchSize >= context.countriesQueueSize,
+              },
+              {
+                target: '#main.finalize',
+              },
+            ],
           },
         },
       },
