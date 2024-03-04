@@ -8,7 +8,7 @@ const collectRdfFilesSchema = z.object({
     message: 'logger must be defined',
   }),
   globPattern: z.string(), // E.g. 'data/**/*.ttl'
-  graphBaseIri: z.string().transform(value => value.replace(/\/+$/, '')), // E.g. 'https://example.org'
+  graphBaseIri: z.string().transform(value => value.replace(/\/+$/, '')), // From 'https://example.org/' to 'https://example.org'
 });
 
 export type CollectRdfFilesInput = z.infer<typeof collectRdfFilesSchema>;

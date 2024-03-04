@@ -163,7 +163,7 @@ export async function run(input: Input) {
             credentials: context.iterateCredentials,
             waitBetweenRequests: context.iterateWaitBetweenRequests,
           }),
-          onDone: 'getAfterIterateQueueSize', // TBD: add option to dereference immediately instead of on the next run?
+          onDone: 'getAfterIterateQueueSize',
         },
       },
       // State 6
