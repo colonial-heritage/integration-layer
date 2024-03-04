@@ -2,7 +2,7 @@
 
 Monorepo for managing components of the integration layer of Colonial Collections.
 
-## With Docker
+## Development with Docker
 
 ### Install packages
 
