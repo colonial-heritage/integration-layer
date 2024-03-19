@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsup",
     "test": "vitest --coverage",
-    "test:once": "vitest --run --passWithNoTests"
+    "test:once": "vitest --run"
   },
   "dependencies": {
     "@colonial-collections/common": "*",
