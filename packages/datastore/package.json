@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "better-sqlite3": "9.2.2",
-    "kysely": "0.26.3",
+    "kysely": "0.27.2",
     "zod": "3.22.4"
   },
   "devDependencies": {
