@@ -13,6 +13,7 @@ import {
   getLastRun,
   getQueueSize,
   registerRun,
+  updateService,
 } from '@colonial-collections/xstate-actors';
 import type {pino} from 'pino';
 import {assign, createActor, setup, toPromise} from 'xstate';
@@ -36,6 +37,14 @@ const inputSchema = z.object({
   dereferenceTimeoutPerRequest: z.number().optional(),
   dereferenceNumberOfConcurrentRequests: z.number().default(20), // ~ single-threaded max performance
   dereferenceBatchSize: z.number().optional(), // If undefined: process the entire queue
+  triplydbInstanceUrl: z.string(),
+  triplydbApiToken: z.string(),
+  triplydbAccount: z.string(),
+  triplydbDataset: z.string(),
+  triplydbService: z.string(),
+  triplydbServiceTemplatesFile: z.string().optional(),
+  graphName: z.string(),
+  tempDir: z.string().optional(),
 });
 
 export type Input = z.input<typeof inputSchema>;
@@ -61,10 +70,9 @@ export async function run(input: Input) {
       Finalize
     Else (queue is not empty):
       Process collected IRIs: dereference or delete
+      If queue is empty:
+        Sync data to data platform
       Finalize
-
-    The workflow currently does not upload the dereferenced resources
-    to the data platform; we still need to decide on where to go
   */
 
   const workflow = setup({
@@ -87,6 +95,7 @@ export async function run(input: Input) {
       getQueueSize,
       iterate,
       registerRun,
+      updateService,
     },
   }).createMachine({
     id: 'main',
@@ -124,7 +133,7 @@ export async function run(input: Input) {
             guard: ({context}) => context.queueSize === 0,
           },
           {
-            target: 'dereference',
+            target: 'updateResources',
           },
         ],
       },
@@ -174,7 +183,7 @@ export async function run(input: Input) {
           src: 'getQueueSize',
           input: ({context}) => context,
           onDone: {
-            target: 'evaluateIfResourcesMustBeDereferencedNow',
+            target: 'evaluateIfResourcesMustBeUpdatedNow',
             actions: assign({
               queueSize: ({event}) => event.output,
             }),
@@ -182,10 +191,10 @@ export async function run(input: Input) {
         },
       },
       // State 7
-      evaluateIfResourcesMustBeDereferencedNow: {
+      evaluateIfResourcesMustBeUpdatedNow: {
         always: [
           {
-            target: 'dereference',
+            target: 'updateResources',
             guard: ({context}) =>
               context.dereferenceBatchSize === undefined ||
               context.dereferenceBatchSize >= context.queueSize,
@@ -196,23 +205,68 @@ export async function run(input: Input) {
         ],
       },
       // State 8
-      dereference: {
-        invoke: {
-          id: 'dereference',
-          src: 'dereference',
-          input: ({context}) => ({
-            ...context,
-            queue: context.queue,
-            resourceDir: context.resourceDir,
-            credentials: context.dereferenceCredentials,
-            headers: context.dereferenceHeaders,
-            waitBetweenRequests: context.dereferenceWaitBetweenRequests,
-            timeoutPerRequest: context.dereferenceTimeoutPerRequest,
-            numberOfConcurrentRequests:
-              context.dereferenceNumberOfConcurrentRequests,
-            batchSize: context.dereferenceBatchSize,
-          }),
-          onDone: 'finalize',
+      updateResources: {
+        initial: 'dereference',
+        states: {
+          // State 8a
+          dereference: {
+            invoke: {
+              id: 'dereference',
+              src: 'dereference',
+              input: ({context}) => ({
+                ...context,
+                queue: context.queue,
+                resourceDir: context.resourceDir,
+                credentials: context.dereferenceCredentials,
+                headers: context.dereferenceHeaders,
+                waitBetweenRequests: context.dereferenceWaitBetweenRequests,
+                timeoutPerRequest: context.dereferenceTimeoutPerRequest,
+                numberOfConcurrentRequests:
+                  context.dereferenceNumberOfConcurrentRequests,
+                batchSize: context.dereferenceBatchSize,
+              }),
+              onDone: 'getQueueSize',
+            },
+          },
+          // State 8b
+          getQueueSize: {
+            invoke: {
+              id: 'getQueueSize',
+              src: 'getQueueSize',
+              input: ({context}) => context,
+              onDone: {
+                target: 'evaluateQueue',
+                actions: assign({
+                  queueSize: ({event}) => event.output,
+                }),
+              },
+            },
+          },
+          // State 8c
+          evaluateQueue: {
+            always: [
+              {
+                // Only allowed to sync the generated resources if all items
+                // in the queue have been processed
+                target: 'updateService',
+                guard: ({context}) => context.queueSize === 0,
+              },
+              {
+                target: '#main.finalize',
+              },
+            ],
+          },
+          // State 8d
+          // This action fails if another process is already
+          // syncing resources to the data platform
+          updateService: {
+            invoke: {
+              id: 'updateService',
+              src: 'updateService',
+              input: ({context}) => context,
+              onDone: '#main.finalize',
+            },
+          },
         },
       },
       // State 9

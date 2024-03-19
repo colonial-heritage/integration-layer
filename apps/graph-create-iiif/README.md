@@ -14,7 +14,14 @@ Creates a graph according to the IIIF Change Discovery protocol
       --dereference-wait-between-requests 100 \
       --dereference-timeout-per-request 300000 \
       --dereference-number-of-concurrent-requests 1 \
-      --dereference-batch-size 10
+      --dereference-batch-size 10 \
+      --triplydb-instance-url "$TRIPLYDB_INSTANCE_URL" \
+      --triplydb-api-token "$TRIPLYDB_API_TOKEN" \
+      --triplydb-account "$TRIPLYDB_ACCOUNT_DEVELOPMENT" \
+      --triplydb-dataset "$TRIPLYDB_DATASET_KG_DEVELOPMENT" \
+      --triplydb-service "kg" \
+      --graph-name "https://example.org/bodleian" \
+      --temp-dir ./tmp
 
 With additional settings:
 
@@ -33,4 +40,11 @@ With additional settings:
       --dereference-wait-between-requests 100 \
       --dereference-timeout-per-request 300000 \
       --dereference-number-of-concurrent-requests 1 \
-      --dereference-batch-size 10
+      --dereference-batch-size 10 \
+      --triplydb-instance-url "$TRIPLYDB_INSTANCE_URL" \
+      --triplydb-api-token "$TRIPLYDB_API_TOKEN" \
+      --triplydb-account "$TRIPLYDB_ACCOUNT_DEVELOPMENT" \
+      --triplydb-dataset "$TRIPLYDB_DATASET_KG_DEVELOPMENT" \
+      --triplydb-service "kg" \
+      --graph-name "https://example.org/bodleian" \
+      --temp-dir ./tmp

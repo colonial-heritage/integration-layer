@@ -4,6 +4,7 @@ import {Filestore} from '@colonial-collections/filestore';
 import {existsSync} from 'node:fs';
 import {mkdir} from 'node:fs/promises';
 import {join} from 'node:path';
+import {env} from 'node:process';
 import {rimraf} from 'rimraf';
 import {beforeEach, describe, expect, it} from 'vitest';
 
@@ -11,6 +12,12 @@ let connection: Connection;
 const tmpDir = './tmp/integration';
 const resourceDir = join(tmpDir, 'resources');
 const dataFile = join(tmpDir, 'data.sqlite');
+const triplydbInstanceUrl = env.TRIPLYDB_INSTANCE_URL as string;
+const triplydbApiToken = env.TRIPLYDB_API_TOKEN as string;
+const triplydbAccount = env.TRIPLYDB_ACCOUNT_DEVELOPMENT as string;
+const triplydbDataset = env.TRIPLYDB_DATASET_KG_DEVELOPMENT as string;
+const triplydbService = 'kg';
+const graphName = 'https://example.org/graph-create-iiif-integration';
 
 beforeEach(async () => {
   await rimraf(tmpDir);
@@ -27,6 +34,12 @@ describe('run', () => {
       iterateEndpointUrl:
         'https://iiif.bodleian.ox.ac.uk/iiif/activity/all-changes',
       dereferenceBatchSize: 10,
+      triplydbInstanceUrl,
+      triplydbApiToken,
+      triplydbAccount,
+      triplydbDataset,
+      triplydbService,
+      graphName,
     });
 
     const queue = new Queue({connection});
@@ -47,6 +60,12 @@ describe('run', () => {
       iterateEndpointUrl:
         'https://iiif.bodleian.ox.ac.uk/iiif/activity/all-changes',
       dereferenceBatchSize: 10,
+      triplydbInstanceUrl,
+      triplydbApiToken,
+      triplydbAccount,
+      triplydbDataset,
+      triplydbService,
+      graphName,
     });
 
     const queue = new Queue({connection});
@@ -67,6 +86,12 @@ describe('run', () => {
       iterateEndpointUrl:
         'https://iiif.bodleian.ox.ac.uk/iiif/activity/all-changes',
       dereferenceBatchSize: 10,
+      triplydbInstanceUrl,
+      triplydbApiToken,
+      triplydbAccount,
+      triplydbDataset,
+      triplydbService,
+      graphName,
     });
 
     const queue = new Queue({connection});
@@ -76,7 +101,7 @@ describe('run', () => {
 });
 
 describe('run', () => {
-  it('dereferences a resource if queue contains a resource (states 1, 2, 8, 9)', async () => {
+  it('dereferences a resource if queue contains a resource and does not sync to data platform because queue is not empty (states 1, 2, 8a, 8b, 8c, 9)', async () => {
     const iri1 =
       'https://iiif.bodleian.ox.ac.uk/iiif/manifest/cc6f7f04-7236-40e2-8327-520158dfc7d5.json';
     const iri2 =
@@ -91,6 +116,12 @@ describe('run', () => {
       dataFile,
       iterateEndpointUrl: '', // Unused by the test
       dereferenceBatchSize: 1,
+      triplydbInstanceUrl,
+      triplydbApiToken,
+      triplydbAccount,
+      triplydbDataset,
+      triplydbService,
+      graphName,
     });
 
     const filestore = new Filestore({dir: resourceDir});
@@ -98,5 +129,26 @@ describe('run', () => {
 
     expect(existsSync(pathOfIri)).toBe(true);
     expect(await queue.size()).toBe(1);
+  });
+
+  it('dereferences a resource if queue contains a resource and syncs to data platform because queue is empty (states 1, 2, 8a, 8b, 8c, 8d, 9)', async () => {
+    const iri =
+      'https://iiif.bodleian.ox.ac.uk/iiif/manifest/cc6f7f04-7236-40e2-8327-520158dfc7d5.json';
+
+    const queue = new Queue({connection});
+    await queue.push({iri});
+
+    await run({
+      resourceDir,
+      dataFile,
+      iterateEndpointUrl: '', // Unused by the test
+      dereferenceBatchSize: 1,
+      triplydbInstanceUrl,
+      triplydbApiToken,
+      triplydbAccount,
+      triplydbDataset,
+      triplydbService,
+      graphName,
+    });
   });
 });
