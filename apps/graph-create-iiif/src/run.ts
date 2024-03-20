@@ -196,8 +196,9 @@ export async function run(input: Input) {
           {
             target: 'updateResources',
             guard: ({context}) =>
-              context.dereferenceBatchSize === undefined ||
-              context.dereferenceBatchSize >= context.queueSize,
+              context.queueSize > 0 &&
+              (context.dereferenceBatchSize === undefined ||
+                context.dereferenceBatchSize >= context.queueSize),
           },
           {
             target: 'finalize',
