@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@comunica/query-sparql-file": "2.10.2",
-    "fastq": "1.15.0",
+    "fastq": "1.17.1",
     "glob": "10.3.10",
     "zod": "3.22.4"
   },

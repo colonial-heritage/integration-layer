@@ -11,7 +11,7 @@
     "test:once": "vitest --run"
   },
   "dependencies": {
-    "fastq": "1.15.0",
+    "fastq": "1.17.1",
     "fetch-sparql-endpoint": "4.1.0",
     "p-retry": "6.1.0",
     "zod": "3.22.4"
