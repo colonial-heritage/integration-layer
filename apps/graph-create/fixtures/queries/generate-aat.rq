@@ -6,7 +6,9 @@ CONSTRUCT {
     skos:altLabel ?altLabel .
 }
 WHERE {
-  BIND(?_iri AS ?this)
+  VALUES ?this {
+    ?_iris
+  }
   ?this a skos:Concept ;
     skos:prefLabel ?prefLabel .
   OPTIONAL { ?this skos:altLabel ?altlabel }

@@ -56,7 +56,7 @@ describe('run', () => {
 
     // New resource about 'John Dowding' should have been created
     const filestore = new Filestore({dir: resourceDir});
-    const pathOfSampleIri = filestore.createPathFromIri(sampleIri);
+    const pathOfSampleIri = filestore.createPathFromId(sampleIri);
 
     expect(existsSync(pathOfSampleIri)).toBe(true);
   });
@@ -87,7 +87,7 @@ describe('run', () => {
 
     // New resource about 'John Dowding' should have been created
     const filestore = new Filestore({dir: resourceDir});
-    const pathOfSampleIri = filestore.createPathFromIri(sampleIri);
+    const pathOfSampleIri = filestore.createPathFromId(sampleIri);
 
     expect(existsSync(pathOfSampleIri)).toBe(true);
   });
@@ -149,7 +149,7 @@ describe('run', () => {
 
     // Obsolete resource about 'John McCallum' should have been removed
     const filestore = new Filestore({dir: resourceDir});
-    const pathOfObsoleteIri = filestore.createPathFromIri(obsoleteIri);
+    const pathOfObsoleteIri = filestore.createPathFromId(obsoleteIri);
 
     expect(existsSync(pathOfObsoleteIri)).toBe(false);
   });

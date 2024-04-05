@@ -18,8 +18,9 @@ Creates a graph by querying a SPARQL endpoint
       --generate-query-file ./fixtures/queries/generate-dbpedia.rq \
       --generate-wait-between-requests 100 \
       --generate-timeout-per-request 300000 \
+      --generate-number-of-resources-per-request 3 \
       --generate-number-of-concurrent-requests 1 \
-      --generate-batch-size 1 \
+      --generate-batch-size 5 \
       --triplydb-instance-url "$TRIPLYDB_INSTANCE_URL" \
       --triplydb-api-token "$TRIPLYDB_API_TOKEN" \
       --triplydb-account "$TRIPLYDB_ACCOUNT_DEVELOPMENT" \
@@ -45,12 +46,33 @@ Creates a graph by querying a SPARQL endpoint
       --generate-query-file ./fixtures/queries/generate-dbpedia.rq \
       --generate-wait-between-requests 100 \
       --generate-timeout-per-request 300000 \
+      --generate-number-of-resources-per-request 3 \
       --generate-number-of-concurrent-requests 1 \
-      --generate-batch-size 1 \
+      --generate-batch-size 5 \
       --triplydb-instance-url "$TRIPLYDB_INSTANCE_URL" \
       --triplydb-api-token "$TRIPLYDB_API_TOKEN" \
       --triplydb-account "$TRIPLYDB_ACCOUNT_DEVELOPMENT" \
       --triplydb-dataset "$TRIPLYDB_DATASET_KG_DEVELOPMENT" \
       --triplydb-service "kg" \
       --graph-name "https://example.org/dbpedia" \
+      --temp-dir ./tmp
+
+
+
+
+    ./dist/cli.js create \
+      --resource-dir ./tmp/nmvw/resources \
+      --data-file ./tmp/nmvw/data.sqlite \
+      --iterate-endpoint-url "https://api.colonialcollections.nl/datasets/data-hub/knowledge-graph/services/kg/sparql" \
+      --iterate-query-file ./fixtures/nmvw/iterate.rq \
+      --iterate-wait-between-requests 100 \
+      --iterate-timeout-per-request 300000 \
+      --generate-endpoint-url "https://api.colonialcollections.nl/datasets/data-hub/knowledge-graph/services/kg/sparql" \
+      --generate-query-file ./fixtures/nmvw/generate.rq \
+      --triplydb-instance-url "$TRIPLYDB_INSTANCE_URL" \
+      --triplydb-api-token "$TRIPLYDB_API_TOKEN" \
+      --triplydb-account "$TRIPLYDB_ACCOUNT_DEVELOPMENT" \
+      --triplydb-dataset "$TRIPLYDB_DATASET_KG_DEVELOPMENT" \
+      --triplydb-service "kg" \
+      --graph-name "https://example.org/nmvw" \
       --temp-dir ./tmp

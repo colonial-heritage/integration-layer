@@ -52,8 +52,8 @@ describe('run', () => {
     const queueSize = await queue.size();
     expect(queueSize).toBe(0);
 
-    const pathOfIri1 = filestore.createPathFromIri(iri1);
-    const pathOfIri2 = filestore.createPathFromIri(iri2);
+    const pathOfIri1 = filestore.createPathFromId(iri1);
+    const pathOfIri2 = filestore.createPathFromId(iri2);
 
     expect(existsSync(pathOfIri1)).toBe(true);
     expect(existsSync(pathOfIri2)).toBe(true);
@@ -89,8 +89,8 @@ describe('run', () => {
     const queueSize = await queue.size();
     expect(queueSize).toBe(1);
 
-    const pathOfIri1 = filestore.createPathFromIri(iri1);
-    const pathOfIri2 = filestore.createPathFromIri(iri2);
+    const pathOfIri1 = filestore.createPathFromId(iri1);
+    const pathOfIri2 = filestore.createPathFromId(iri2);
 
     expect(existsSync(pathOfIri1)).toBe(true);
     expect(existsSync(pathOfIri2)).toBe(false);
@@ -116,9 +116,9 @@ describe('run', () => {
 
     await storer.run({queue, batchSize: 1});
 
-    const pathOfIri1 = filestore.createPathFromIri(iri1);
-    const pathOfIri2 = filestore.createPathFromIri(iri2);
-    const pathOfIri3 = filestore.createPathFromIri(iri3);
+    const pathOfIri1 = filestore.createPathFromId(iri1);
+    const pathOfIri2 = filestore.createPathFromId(iri2);
+    const pathOfIri3 = filestore.createPathFromId(iri3);
 
     expect(existsSync(pathOfIri1)).toBe(true);
     expect(existsSync(pathOfIri2)).toBe(false);
@@ -148,8 +148,8 @@ describe('run', () => {
     const queueSize = await queue.size();
     expect(queueSize).toBe(0);
 
-    const pathOfIri1 = filestore.createPathFromIri(iri1);
-    const pathOfIri2 = filestore.createPathFromIri(iri2);
+    const pathOfIri1 = filestore.createPathFromId(iri1);
+    const pathOfIri2 = filestore.createPathFromId(iri2);
 
     expect(existsSync(pathOfIri1)).toBe(false);
     expect(existsSync(pathOfIri2)).toBe(false);
@@ -157,7 +157,7 @@ describe('run', () => {
 
   it('removes items that have action "delete" from the filestore', async () => {
     const iri = 'http://vocab.getty.edu/aat/300111999';
-    const pathOfIri = filestore.createPathFromIri(iri);
+    const pathOfIri = filestore.createPathFromId(iri);
 
     const queue = new Queue({connection});
 

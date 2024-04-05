@@ -1,3 +1,4 @@
+import {toChunks} from './array-to-chunks.js';
 import {Queue, QueueItem} from '@colonial-collections/datastore';
 import {Filestore} from '@colonial-collections/filestore';
 import {SparqlGenerator} from '@colonial-collections/sparql-generator';
@@ -22,6 +23,7 @@ export type ConstructorOptions = z.input<typeof constructorOptionsSchema>;
 const runOptionsSchema = z.object({
   queue: z.instanceof(Queue),
   type: z.string().optional(),
+  numberOfResourcesPerRequest: z.number().min(1).optional().default(1),
   numberOfConcurrentRequests: z.number().min(1).default(1),
   waitBetweenRequests: z.number().min(0).optional(),
   batchSize: z.number().min(1).optional(), // Undefined if the entire queue must be processed
@@ -52,22 +54,32 @@ export class SparqlStorer extends EventEmitter {
   async run(options: RunOptions) {
     const opts = runOptionsSchema.parse(options);
 
-    const items = await opts.queue.getAll({
+    const allItems = await opts.queue.getAll({
       limit: opts.batchSize,
       type: opts.type,
     });
 
-    this.logger.info(`Processing ${items.length} items from the queue`);
+    this.logger.info(`Processing ${allItems.length} items from the queue`);
     let numberOfProcessedResources = 0;
 
-    const process = async (item: QueueItem) => {
-      const quadStream = await this.generator.getResource(item.iri);
-      await this.filestore.save({iri: item.iri, quadStream});
-      await opts.queue.processAndSave(item);
-      await setTimeout(opts.waitBetweenRequests); // Try not to hurt the server or trigger its rate limiter
+    const process = async (items: QueueItem[]) => {
+      const irisOfItems = items.map(item => item.iri);
+      const quadStream = await this.generator.getResources(irisOfItems);
+      const id = irisOfItems.join(); // A bit artificial, just to have an ID
+      await this.filestore.save({id, quadStream});
 
-      numberOfProcessedResources++;
-      this.emit('processed-resource', items.length, numberOfProcessedResources);
+      for (const item of items) {
+        await opts.queue.processAndSave(item);
+      }
+
+      numberOfProcessedResources += items.length;
+      this.emit(
+        'processed-resource',
+        allItems.length,
+        numberOfProcessedResources
+      );
+
+      await setTimeout(opts.waitBetweenRequests); // Try not to hurt the server or trigger its rate limiter
     };
 
     const processQueue = fastq.promise(
@@ -75,16 +87,24 @@ export class SparqlStorer extends EventEmitter {
       opts.numberOfConcurrentRequests
     );
 
-    for (const item of items) {
+    // Split items into chunks: [1, 2, 3, 4, 5] => [[1, 2], [3, 4], [5]]
+    const chunks = [...toChunks(allItems, opts.numberOfResourcesPerRequest)];
+
+    for (const items of chunks) {
       // Do not 'await processQueue.push(item)' - it processes items sequentially, not in parallel
-      processQueue.push(item).catch(async err => {
+      processQueue.push(items).catch(async err => {
+        const irisOfItems = items.map(item => item.iri);
         this.logger.error(
           err,
-          `An error occurred when processing "${item.iri}": ${err.message}`
+          `An error occurred when processing "${irisOfItems.join(', ')}": ${
+            err.message
+          }`
         );
 
         try {
-          await opts.queue.retry(item);
+          for (const item of items) {
+            await opts.queue.retry(item);
+          }
         } catch (err) {
           this.logger.error(err);
         }

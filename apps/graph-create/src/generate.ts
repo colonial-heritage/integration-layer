@@ -15,6 +15,7 @@ const inputSchema = z.object({
   queryFile: z.string(),
   waitBetweenRequests: z.number().optional(),
   timeoutPerRequest: z.number().optional(),
+  numberOfResourcesPerRequest: z.number().optional(),
   numberOfConcurrentRequests: z.number().optional(),
   batchSize: z.number().optional(),
 });
@@ -47,8 +48,9 @@ export const generate = fromPromise(async ({input}: {input: Input}) => {
 
   await storer.run({
     queue: opts.queue,
-    waitBetweenRequests: opts.waitBetweenRequests,
+    numberOfResourcesPerRequest: opts.numberOfResourcesPerRequest,
     numberOfConcurrentRequests: opts.numberOfConcurrentRequests,
+    waitBetweenRequests: opts.waitBetweenRequests,
     batchSize: opts.batchSize,
   });
 

@@ -1,0 +1,244 @@
+###############################
+# Query for generating a search graph from dataset 'Collection Archives'
+###############################
+
+PREFIX cc: <https://colonialcollections.nl/schema#> # Internal ontology
+PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+PREFIX dig: <http://www.ics.forth.gr/isl/CRMdig/>
+PREFIX gn: <http://www.geonames.org/ontology#>
+PREFIX la: <https://linked.art/ns/terms/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX schema: <https://schema.org/>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+CONSTRUCT {
+  ?this a cc:HeritageObject ;
+    cc:additionalType_en ?typeNameEn ;
+    cc:additionalType_nl ?typeNameNl ;
+    cc:identifier ?identifier ;
+    cc:name ?name ;
+    cc:description ?description ;
+    cc:material_en ?materialNameEn ;
+    cc:material_nl ?materialNameNl ;
+    cc:inscription ?inscription ;
+    cc:creator ?creatorName ;
+    cc:yearCreatedStart ?beginOfTheBeginYear ;
+    cc:yearCreatedEnd ?endOfTheEndYear ;
+    cc:locationCreated ?locationCreatedName ; # Only for indexing
+    cc:countryCreated_en ?countryCreatedNameEn ;
+    cc:countryCreated_nl ?countryCreatedNameNl ;
+    cc:alternateName ?alternateLocationCreatedName, ?alternateCountryCreatedName ; # Only for indexing
+    cc:publisher_en ?publisherNameEn ;
+    cc:publisher_nl ?publisherNameNl .
+}
+WHERE {
+  VALUES ?this {
+    ?_iris
+  }
+
+  ####################
+  # Type
+  ####################
+
+  OPTIONAL {
+    ?this crm:P2_has_type [
+      skos:prefLabel ?typeName
+    ] .
+
+    BIND(IF(LANG(?typeName) = "en", ?typeName, ?null) AS ?typeNameEn)
+    BIND(IF(LANG(?typeName) = "nl", ?typeName, ?null) AS ?typeNameNl)
+  }
+
+  ####################
+  # Identifier
+  ####################
+
+  OPTIONAL {
+    ?this crm:P1_is_identified_by [
+      a crm:E42_Identifier ;
+      crm:P2_has_type <http://vocab.getty.edu/aat/300404626> ; # Identification number
+      crm:P190_has_symbolic_content ?identifier
+    ] .
+  }
+
+  ####################
+  # Name
+  ####################
+
+  OPTIONAL {
+    ?this crm:P1_is_identified_by [
+      a crm:E33_E41_Linguistic_Appellation ;
+      crm:P2_has_type <http://vocab.getty.edu/aat/300404670> ; # Name
+      crm:P190_has_symbolic_content ?name
+    ] .
+  }
+
+  ####################
+  # Description
+  ####################
+
+  OPTIONAL {
+    ?this crm:P67i_is_referred_to_by [
+      crm:P2_has_type <http://vocab.getty.edu/aat/300435416> ; # Description
+      crm:P190_has_symbolic_content ?description
+    ] .
+  }
+
+  ####################
+  # Subject
+  ####################
+  # TBD: not in the KG yet (crm:P62_depicts)
+
+  ####################
+  # Material
+  ####################
+
+  OPTIONAL {
+    ?this crm:P45_consists_of [
+      skos:prefLabel ?materialName
+    ] .
+
+    BIND(IF(LANG(?materialName) = "en", ?materialName, ?null) AS ?materialNameEn)
+    BIND(IF(LANG(?materialName) = "nl", ?materialName, ?null) AS ?materialNameNl)
+  }
+
+  ####################
+  # Inscription
+  ####################
+
+  OPTIONAL {
+    ?this crm:P128_carries [
+      crm:P2_has_type <http://vocab.getty.edu/aat/300028702> ; # Inscription
+      crm:P190_has_symbolic_content ?inscription ;
+    ] .
+  }
+
+  ####################
+  # Technique
+  ####################
+  # TBD: not in the KG yet (crm:P108i_was_produced_by/crm:P32_used_general_technique)
+
+  ####################
+  # Creator
+  ####################
+
+  OPTIONAL {
+    ?this crm:P108i_was_produced_by/crm:P14_carried_out_by [
+      rdfs:label ?creatorName
+    ] .
+  }
+
+  ####################
+  # Date of creation
+  ####################
+
+  OPTIONAL {
+    ?this crm:P108i_was_produced_by/crm:P4_has_time-span/crm:P82a_begin_of_the_begin ?beginOfTheBegin .
+    FILTER(DATATYPE(?beginOfTheBegin) = xsd:date || DATATYPE(?beginOfTheBegin) = xsd:gYear || DATATYPE(?beginOfTheBegin) = xsd:gYearMonth)
+    # Values can have an xsd date type but not be a valid date (!) - ignore these
+    FILTER(COALESCE(xsd:date(STR(?beginOfTheBegin)), '!') != '!')
+  }
+
+  BIND(IF(BOUND(?beginOfTheBegin), YEAR(?beginOfTheBegin), ?null) AS ?beginOfTheBeginYear)
+
+  OPTIONAL {
+    ?this crm:P108i_was_produced_by/crm:P4_has_time-span/crm:P82b_end_of_the_end ?endOfTheEnd .
+    FILTER(DATATYPE(?endOfTheEnd) = xsd:date || DATATYPE(?endOfTheEnd) = xsd:gYear || DATATYPE(?endOfTheEnd) = xsd:gYearMonth)
+    # Values can have an xsd date type but not be a valid date (!) - ignore these
+    FILTER(COALESCE(xsd:date(STR(?endOfTheEnd)), '!') != '!')
+  }
+
+  BIND(IF(BOUND(?endOfTheEnd), YEAR(?endOfTheEnd), ?null) AS ?endOfTheEndYear)
+
+  ####################
+  # Location of creation
+  ####################
+
+  OPTIONAL {
+    ?this crm:P108i_was_produced_by/crm:P7_took_place_at ?location .
+    ?location gn:name ?unofficialLocationCreatedName ;
+      gn:featureCode ?featureCode .
+
+    # Official name may not exist, see e.g. https://sws.geonames.org/3827414/
+    OPTIONAL {
+      ?location gn:officialName ?officialLocationCreatedName
+      FILTER(LANG(?officialLocationCreatedName) IN ("en", "nl"))
+    }
+
+    BIND(IF(BOUND(?officialLocationCreatedName), ?officialLocationCreatedName, ?unofficialLocationCreatedName) AS ?locationCreatedName)
+
+    OPTIONAL {
+      ?location gn:alternateName ?alternateLocationCreatedName
+      FILTER(LANG(?alternateLocationCreatedName) IN ("en", "nl"))
+    }
+
+    # Country of which the location is a part
+    OPTIONAL {
+      ?location gn:parentCountry ?country .
+      ?country gn:name ?unofficialCountryCreatedName .
+
+      # Official name may not exist
+      OPTIONAL {
+        ?country gn:officialName ?officialCountryCreatedName
+        FILTER(LANG(?officialCountryCreatedName) IN ("en", "nl"))
+      }
+
+      BIND(IF(BOUND(?officialCountryCreatedName), ?officialCountryCreatedName, ?unofficialCountryCreatedName) AS ?countryCreatedName)
+
+      OPTIONAL {
+        ?country gn:alternateName ?alternateCountryCreatedName
+        FILTER(LANG(?alternateCountryCreatedName) IN ("en", "nl"))
+      }
+    }
+
+    # Location could be a country already
+    # https://www.geonames.org/export/codes.html
+    BIND(IF(?featureCode = <https://www.geonames.org/ontology#A.PCLI>, ?locationCreatedName, ?countryCreatedName) AS ?countryCreated)
+
+    # A country can have multiple names - remove redundant
+    BIND(IF(LANG(?countryCreated) = "en" && ?countryCreated NOT IN (
+      "United States of America"@en,
+      "Congo Republic"@en,
+      "DR Congo"@en,
+      "Congo (DRC)"@en,
+      "São Tomé & Príncipe"@en,
+      "Republic of Korea"@en,
+      "St. Helena"@en,
+      "Republic of South Africa"@en,
+      "Hashemite Kingdom of Jordan"@en,
+      "Republic of South Sudan"@en,
+      "Bonaire, Saint Eustatius, and Saba"@en), ?countryCreated, ?null) AS ?countryCreatedNameEn)
+
+    BIND(IF(LANG(?countryCreated) = "nl" && ?countryCreated NOT IN (
+      "Republiek Indonesië"@nl,
+      "Libische Arabische Republiek"@nl,
+      "Bonaire, Sint Eustatius en Saba"@nl,
+      "Micronesia"@nl,
+      "São Tomé and Príncipe"@nl,
+      "Noordelijke Marianeneilanden"@nl,
+      "Amerikaans Samoa"@nl,
+      "Iran (Islamitische Republiek)"@nl,
+      "Sint-Maarten"@nl,
+      "Saudi-Arabië"@nl,
+      "St. Lucia"@nl,
+      "Republiek Korea"@nl), ?countryCreated, ?null) AS ?countryCreatedNameNl)
+  }
+
+  ####################
+  # Part of dataset
+  ####################
+
+  ?this la:member_of ?dataset .
+
+  ####################
+  # Publisher of dataset
+  ####################
+
+  OPTIONAL {
+    ?dataset schema:publisher/schema:name ?publisherName
+
+    BIND(IF(LANG(?publisherName) = "en", ?publisherName, ?null) AS ?publisherNameEn)
+    BIND(IF(LANG(?publisherName) = "nl", ?publisherName, ?null) AS ?publisherNameNl)
+  }
+}

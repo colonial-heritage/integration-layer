@@ -13,7 +13,7 @@ import {
   iterate,
   registerRun,
   registerRunAndCheckIfRunMustContinue,
-  removeObsoleteResources,
+  removeObsoleteResourcesNotInQueue,
   updateService,
 } from '@colonial-collections/xstate-actors';
 import {join} from 'node:path';
@@ -129,7 +129,7 @@ export async function run(input: Input) {
       iterate,
       registerRun,
       registerRunAndCheckIfRunMustContinue,
-      removeObsoleteResources,
+      removeObsoleteResourcesNotInQueue,
       updateService,
     },
   }).createMachine({
@@ -277,7 +277,7 @@ export async function run(input: Input) {
           removeObsoleteLocations: {
             invoke: {
               id: 'removeObsoleteLocations',
-              src: 'removeObsoleteResources',
+              src: 'removeObsoleteResourcesNotInQueue',
               input: ({context}) => ({
                 ...context,
                 queue: context.queue,
@@ -397,7 +397,7 @@ export async function run(input: Input) {
           removeObsoleteCountries: {
             invoke: {
               id: 'removeObsoleteCountries',
-              src: 'removeObsoleteResources',
+              src: 'removeObsoleteResourcesNotInQueue',
               input: ({context}) => ({
                 ...context,
                 queue: context.queue,

@@ -125,7 +125,7 @@ describe('run', () => {
     });
 
     const filestore = new Filestore({dir: resourceDir});
-    const pathOfIri = filestore.createPathFromIri(iri1);
+    const pathOfIri = filestore.createPathFromId(iri1);
 
     expect(existsSync(pathOfIri)).toBe(true);
     expect(await queue.size()).toBe(1);

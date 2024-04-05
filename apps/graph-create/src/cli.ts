@@ -47,6 +47,10 @@ cli
     'Timeout per request, in milliseconds'
   )
   .option(
+    '--generate-number-of-resources-per-request [number]',
+    'Number of resources to generate per request'
+  )
+  .option(
     '--generate-number-of-concurrent-requests [number]',
     'Number of concurrent requests'
   )

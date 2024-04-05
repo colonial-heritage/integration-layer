@@ -1,5 +1,6 @@
 import {SparqlEndpointFetcher} from 'fetch-sparql-endpoint';
 import {EventEmitter} from 'node:events';
+import {EOL} from 'node:os';
 import pRetry from 'p-retry';
 import {z} from 'zod';
 
@@ -33,7 +34,7 @@ export class SparqlGenerator extends EventEmitter {
   private validateQuery(query: string) {
     // Some sanity checks - can be optimized
     // TBD: use sparqljs for validation?
-    const bindings = ['?this', '?_iri']; // Basil notation
+    const bindings = ['?this', '?_iris']; // Basil notation
     const hasBindings = bindings.every(
       binding => query.indexOf(binding) !== -1
     );
@@ -44,9 +45,10 @@ export class SparqlGenerator extends EventEmitter {
     return query;
   }
 
-  async getResource(iri: string) {
+  async getResources(iris: string[]) {
     // TBD: instead of doing string replacements, generate a new SPARQL query using sparqljs?
-    const query = this.query.replaceAll('?_iri', `<${iri}>`);
+    const irisAsValues = iris.map(iri => `<${iri}>`).join(EOL);
+    const query = this.query.replaceAll('?_iris', irisAsValues);
 
     const run = async () => this.fetcher.fetchTriples(this.endpointUrl, query);
 
@@ -54,7 +56,9 @@ export class SparqlGenerator extends EventEmitter {
       retries: 3,
       onFailedAttempt: err => {
         const prettyError = new Error(
-          `Failed to fetch results from SPARQL endpoint for "${iri}": ${err.message}`
+          `Failed to fetch results from SPARQL endpoint for "${iris.join(
+            ', '
+          )}": ${err.message}`
         );
         prettyError.stack = err.stack;
         this.emit('warning', prettyError);

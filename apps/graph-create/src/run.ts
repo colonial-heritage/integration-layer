@@ -12,7 +12,7 @@ import {
   iterate,
   registerRun,
   registerRunAndCheckIfRunMustContinue,
-  removeObsoleteResources,
+  removeAllResources,
   updateService,
 } from '@colonial-collections/xstate-actors';
 import type {pino} from 'pino';
@@ -34,7 +34,8 @@ const inputSchema = z.object({
   generateQueryFile: z.string(),
   generateWaitBetweenRequests: z.number().default(100),
   generateTimeoutPerRequest: z.number().optional(),
-  generateNumberOfConcurrentRequests: z.number().default(20), // ~ single-threaded max performance
+  generateNumberOfResourcesPerRequest: z.number().default(100),
+  generateNumberOfConcurrentRequests: z.number().default(5), // 20 =~ single-threaded max performance
   generateBatchSize: z.number().optional(), // If undefined: process the entire queue
   triplydbInstanceUrl: z.string(),
   triplydbApiToken: z.string(),
@@ -104,7 +105,7 @@ export async function run(input: Input) {
       iterate,
       registerRun,
       registerRunAndCheckIfRunMustContinue,
-      removeObsoleteResources,
+      removeAllResources,
       updateService,
     },
   }).createMachine({
@@ -210,14 +211,14 @@ export async function run(input: Input) {
                 timeoutPerRequest: context.iterateTimeoutPerRequest,
                 numberOfIrisPerRequest: context.iterateNumberOfIrisPerRequest,
               }),
-              onDone: 'removeObsoleteResources',
+              onDone: 'removeAllResources',
             },
           },
           // State 4b
-          removeObsoleteResources: {
+          removeAllResources: {
             invoke: {
-              id: 'removeObsoleteResources',
-              src: 'removeObsoleteResources',
+              id: 'removeAllResources',
+              src: 'removeAllResources',
               input: ({context}) => context,
               onDone: 'getQueueSize',
             },
@@ -268,6 +269,8 @@ export async function run(input: Input) {
                 queryFile: context.generateQueryFile,
                 waitBetweenRequests: context.generateWaitBetweenRequests,
                 timeoutPerRequest: context.generateTimeoutPerRequest,
+                numberOfResourcesPerRequest:
+                  context.generateNumberOfResourcesPerRequest,
                 numberOfConcurrentRequests:
                   context.generateNumberOfConcurrentRequests,
                 batchSize: context.generateBatchSize,

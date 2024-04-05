@@ -6,6 +6,8 @@ CONSTRUCT {
     schema:name ?name .
 }
 WHERE {
-  BIND(?_iri AS ?this)
+  VALUES ?this {
+    ?_iris
+  }
   ?this foaf:name ?name .
 }

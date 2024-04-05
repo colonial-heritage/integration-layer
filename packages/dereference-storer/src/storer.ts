@@ -55,7 +55,7 @@ export class DereferenceStorer extends EventEmitter {
 
   private async process(options: RunOptions, item: QueueItem) {
     if (item.action === 'delete') {
-      await this.filestore.deleteByIri(item.iri);
+      await this.filestore.deleteById(item.iri);
       await options.queue.processAndRemove(item);
       return;
     }
@@ -65,7 +65,7 @@ export class DereferenceStorer extends EventEmitter {
 
     try {
       const quadStream = await this.dereferencer.getResource(item.iri);
-      await this.filestore.save({iri: item.iri, quadStream});
+      await this.filestore.save({id: item.iri, quadStream});
       await options.queue.processAndSave(item);
     } catch (err) {
       // A lookup may result in a '4xx' status. We then assume the resource
@@ -79,7 +79,7 @@ export class DereferenceStorer extends EventEmitter {
         throw err; // TBD: send to dead letter queue?
       }
 
-      await this.filestore.deleteByIri(item.iri);
+      await this.filestore.deleteById(item.iri);
       await options.queue.processAndRemove(item);
     }
   }

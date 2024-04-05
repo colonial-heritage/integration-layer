@@ -1,0 +1,16 @@
+PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+PREFIX la: <https://linked.art/ns/terms/>
+
+# Use a 'scrollable cursor' - https://vos.openlinksw.com/owiki/wiki/VOS/VirtTipsAndTricksHowToHandleBandwidthLimitExceed
+SELECT *
+WHERE {
+  {
+    SELECT ?this
+    WHERE {
+      ?this a crm:E22_Human-Made_Object ;
+        la:member_of <https://data.colonialcollections.nl/nmvw/collection-archives> .
+    }
+  }
+}
+LIMIT ?_limit
+OFFSET ?_offset

@@ -86,7 +86,7 @@ describe('run', () => {
 
     // Obsolete resource about 'Delft' should have been deleted
     const filestore = new Filestore({dir: locationsDir});
-    const pathOfObsoleteIri = filestore.createPathFromIri(obsoleteIri);
+    const pathOfObsoleteIri = filestore.createPathFromId(obsoleteIri);
 
     expect(existsSync(pathOfObsoleteIri)).toBe(false);
   });
@@ -166,7 +166,7 @@ describe('run', () => {
     });
 
     const filestore = new Filestore({dir: locationsDir});
-    const pathOfIri = filestore.createPathFromIri(iri1);
+    const pathOfIri = filestore.createPathFromId(iri1);
 
     expect(existsSync(pathOfIri)).toBe(true);
     expect(await queue.size()).toBe(1);
@@ -233,7 +233,7 @@ describe('run', () => {
 
     // Obsolete resource about 'Germany' should have been removed
     const filestore = new Filestore({dir: countriesDir});
-    const pathOfObsoleteIri = filestore.createPathFromIri(obsoleteIri);
+    const pathOfObsoleteIri = filestore.createPathFromId(obsoleteIri);
 
     expect(existsSync(pathOfObsoleteIri)).toBe(false);
   });
@@ -264,7 +264,7 @@ describe('run', () => {
     });
 
     const filestore = new Filestore({dir: countriesDir});
-    const pathOfIri = filestore.createPathFromIri(iri1);
+    const pathOfIri = filestore.createPathFromId(iri1);
 
     expect(existsSync(pathOfIri)).toBe(true);
     expect(await queue.size()).toBe(1);

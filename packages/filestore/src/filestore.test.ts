@@ -23,17 +23,17 @@ beforeEach(async () => {
   filestore = new Filestore({dir});
 });
 
-describe('createHashFromIri', () => {
-  it('creates a path from an IRI', async () => {
-    const hash = filestore.createHashFromIri('http://localhost/resource');
+describe('createHashFromId', () => {
+  it('creates a hash from an ID', async () => {
+    const hash = filestore.createHashFromId('http://localhost/resource');
 
     expect(hash).toEqual('d388f3dc1aaec96db5e05936bfb1aa0b');
   });
 });
 
-describe('createPathFromIri', () => {
-  it('creates a path from an IRI', async () => {
-    const path = filestore.createPathFromIri('http://localhost/resource');
+describe('createPathFromId', () => {
+  it('creates a path from an ID', async () => {
+    const path = filestore.createPathFromId('http://localhost/resource');
 
     expect(path.endsWith('tmp/b/0/d388f3dc1aaec96db5e05936bfb1aa0b.nt')).toBe(
       true
@@ -41,35 +41,50 @@ describe('createPathFromIri', () => {
   });
 });
 
-describe('deleteByIri', () => {
-  const iri = 'http://localhost/resource';
-
+describe('deleteById', () => {
   it('does not throw if a resource does not exist', async () => {
-    await filestore.deleteByIri('http://localhost/doesnotexist');
+    await filestore.deleteAll();
   });
 
   it('deletes a resource', async () => {
+    const id = 'http://localhost/resource';
     const quadStream = await getQuadStreamFromFile('./fixtures/resource.ttl');
-    await filestore.save({iri, quadStream});
+    await filestore.save({id, quadStream});
 
-    const path = filestore.createPathFromIri(iri);
+    const path = filestore.createPathFromId(id);
     expect(existsSync(path)).toBe(true);
 
-    await filestore.deleteByIri(iri);
+    await filestore.deleteById(id);
 
     expect(existsSync(path)).toBe(false);
   });
 });
 
+describe('deleteAll', () => {
+  it('does not throw if the resource directory does not exist', async () => {
+    await filestore.deleteAll();
+  });
+
+  it('deletes all resources', async () => {
+    const id = 'http://localhost/resource';
+    const quadStream = await getQuadStreamFromFile('./fixtures/resource.ttl');
+    await filestore.save({id, quadStream});
+
+    expect(existsSync(dir)).toBe(true);
+    await filestore.deleteAll();
+    expect(existsSync(dir)).toBe(false);
+  });
+});
+
 describe('save', () => {
-  const iri = 'http://localhost/resource';
+  const id = 'http://localhost/resource';
 
   it('saves a resource', async () => {
     const quadStream = await getQuadStreamFromFile('./fixtures/resource.ttl');
 
-    await filestore.save({iri, quadStream});
+    await filestore.save({id, quadStream});
 
-    const path = filestore.createPathFromIri(iri);
+    const path = filestore.createPathFromId(id);
     expect(existsSync(path)).toBe(true);
   });
 
@@ -78,9 +93,9 @@ describe('save', () => {
       './fixtures/empty-resource.ttl'
     );
 
-    await filestore.save({iri, quadStream});
+    await filestore.save({id, quadStream});
 
-    const path = filestore.createPathFromIri(iri);
+    const path = filestore.createPathFromId(id);
     expect(existsSync(path)).toBe(false);
   });
 });

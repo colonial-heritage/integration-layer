@@ -21,7 +21,9 @@ const query = `
       skos:altLabel ?altLabel .
   }
   WHERE {
-    BIND(?_iri AS ?this)
+    VALUES ?this {
+      ?_iris
+    }
     ?this a skos:Concept ;
       skos:prefLabel ?prefLabel .
     OPTIONAL { ?this skos:altLabel ?altlabel }
@@ -35,7 +37,7 @@ beforeEach(async () => {
 });
 
 describe('run', () => {
-  it('stores all items in the queue as files', async () => {
+  it('stores every item in the queue in a separate file if "numberOfResourcesPerRequest" = 1', async () => {
     expect.assertions(6);
 
     const iri1 = 'http://vocab.getty.edu/aat/300111999';
@@ -58,17 +60,54 @@ describe('run', () => {
       numberOfEmits++;
     });
 
-    await storer.run({queue});
+    await storer.run({queue, numberOfResourcesPerRequest: 1});
 
     expect(numberOfEmits).toBe(2);
     const queueSize = await queue.size();
     expect(queueSize).toBe(0);
 
-    const pathOfIri1 = filestore.createPathFromIri(iri1);
-    const pathOfIri2 = filestore.createPathFromIri(iri2);
+    const pathOfIri1 = filestore.createPathFromId(iri1);
+    const pathOfIri2 = filestore.createPathFromId(iri2);
 
     expect(existsSync(pathOfIri1)).toBe(true);
     expect(existsSync(pathOfIri2)).toBe(true);
+  });
+
+  it('stores multiple items in the queue in the same file if "numberOfResourcesPerRequest" > 1', async () => {
+    expect.assertions(4);
+
+    const iri1 = 'http://vocab.getty.edu/aat/300111999';
+    const iri2 = 'http://vocab.getty.edu/aat/300027200';
+    const iri3 = 'http://vocab.getty.edu/aat/300026650';
+
+    const queue = new Queue({connection});
+    await queue.push({iri: iri1});
+    await queue.push({iri: iri2});
+    await queue.push({iri: iri3});
+
+    const storer = new SparqlStorer({
+      logger: pino(),
+      resourceDir,
+      endpointUrl: 'https://vocab.getty.edu/sparql',
+      query,
+    });
+
+    let numberOfEmits = 0;
+    storer.on('processed-resource', () => numberOfEmits++);
+
+    await storer.run({queue, numberOfResourcesPerRequest: 2});
+
+    expect(numberOfEmits).toBe(2);
+    const queueSize = await queue.size();
+    expect(queueSize).toBe(0);
+
+    const idOfFirstChunk = [iri1, iri2].join();
+    const pathOfIdOfFirstChunk = filestore.createPathFromId(idOfFirstChunk);
+    expect(existsSync(pathOfIdOfFirstChunk)).toBe(true);
+
+    const idOfSecondChunk = [iri3].join();
+    const pathOfIdOfSecondChunk = filestore.createPathFromId(idOfSecondChunk);
+    expect(existsSync(pathOfIdOfSecondChunk)).toBe(true);
   });
 
   it('stores the selected number of items in the queue as files', async () => {
@@ -100,8 +139,8 @@ describe('run', () => {
     const queueSize = await queue.size();
     expect(queueSize).toBe(1);
 
-    const pathOfIri1 = filestore.createPathFromIri(iri1);
-    const pathOfIri2 = filestore.createPathFromIri(iri2);
+    const pathOfIri1 = filestore.createPathFromId(iri1);
+    const pathOfIri2 = filestore.createPathFromId(iri2);
 
     expect(existsSync(pathOfIri1)).toBe(true);
     expect(existsSync(pathOfIri2)).toBe(false);
@@ -126,9 +165,9 @@ describe('run', () => {
 
     await storer.run({queue, batchSize: 1});
 
-    const pathOfIri1 = filestore.createPathFromIri(iri1);
-    const pathOfIri2 = filestore.createPathFromIri(iri2);
-    const pathOfIri3 = filestore.createPathFromIri(iri3);
+    const pathOfIri1 = filestore.createPathFromId(iri1);
+    const pathOfIri2 = filestore.createPathFromId(iri2);
+    const pathOfIri3 = filestore.createPathFromId(iri3);
 
     expect(existsSync(pathOfIri1)).toBe(true);
     expect(existsSync(pathOfIri2)).toBe(false);

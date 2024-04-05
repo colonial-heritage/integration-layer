@@ -13,14 +13,16 @@ const query = `
       skos:prefLabel ?prefLabel .
   }
   WHERE {
-    BIND(?_iri AS ?this)
+    VALUES ?this {
+      ?_iris
+    }
     ?this a skos:Concept ;
       skos:prefLabel ?prefLabel .
     FILTER(LANGMATCHES(LANG(?prefLabel), "en"))
   }
 `;
 
-describe('getResource', () => {
+describe('getResources', () => {
   it('errors if the endpoint is invalid', async () => {
     expect.assertions(5); // Including retries
 
@@ -36,22 +38,23 @@ describe('getResource', () => {
     });
 
     try {
-      await generator.getResource('http://localhost/error.ttl');
+      await generator.getResources(['http://localhost/error.ttl']);
     } catch (err) {
       const error = err as Error;
       expect(error.message).toEqual('fetch failed');
     }
   });
 
-  it('gets a resource', async () => {
+  it('gets resources', async () => {
     const generator = new SparqlGenerator({
       endpointUrl: 'https://vocab.getty.edu/sparql',
       query,
     });
 
-    const quadStream = await generator.getResource(
-      'http://vocab.getty.edu/aat/300111999'
-    );
+    const quadStream = await generator.getResources([
+      'http://vocab.getty.edu/aat/300111999',
+      'http://vocab.getty.edu/aat/300026650',
+    ]);
 
     const dataStream = serializer.serialize(quadStream, {
       contentType: 'application/n-triples',
@@ -61,6 +64,8 @@ describe('getResource', () => {
     expect(result).toEqual(
       `<http://vocab.getty.edu/aat/300111999> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
 <http://vocab.getty.edu/aat/300111999> <http://www.w3.org/2004/02/skos/core#prefLabel> "publications (documents)"@en .
+<http://vocab.getty.edu/aat/300026650> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2004/02/skos/core#Concept> .
+<http://vocab.getty.edu/aat/300026650> <http://www.w3.org/2004/02/skos/core#prefLabel> "gazettes"@en .
 `
     );
   });
