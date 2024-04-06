@@ -49,6 +49,20 @@ describe('save', () => {
   });
 });
 
+describe('removeAll', () => {
+  it('removes all items', async () => {
+    const registry = new Registry({connection});
+
+    const iri = 'https://example.org';
+    await registry.save({iri});
+    await registry.removeAll();
+
+    const items = await registry.getAll();
+
+    expect(items.length).toBe(0);
+  });
+});
+
 describe('remove', () => {
   it('removes an item', async () => {
     const iri = 'https://example.org';

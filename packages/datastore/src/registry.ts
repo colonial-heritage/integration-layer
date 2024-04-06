@@ -50,6 +50,10 @@ export class Registry {
     await this.db.deleteFrom('registry').where('iri', '=', iri).execute();
   }
 
+  async removeAll() {
+    await this.db.deleteFrom('registry').execute();
+  }
+
   async removeIfNotInQueue(options?: RemoveIfNotInQueueOptions) {
     const opts = removeIfNotInQueueOptionsSchema.parse(options);
 

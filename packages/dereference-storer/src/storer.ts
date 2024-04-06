@@ -55,12 +55,13 @@ export class DereferenceStorer extends EventEmitter {
 
   private async process(options: RunOptions, item: QueueItem) {
     if (item.action === 'delete') {
-      await this.filestore.deleteById(item.iri);
+      await this.filestore.removeById(item.iri);
       await options.queue.processAndRemove(item);
       return;
     }
 
-    // It's a create or update action
+    // If execution gets here, it's a create or update action
+
     await setTimeout(options.waitBetweenRequests); // Try not to hurt the server or trigger its rate limiter
 
     try {
@@ -79,7 +80,7 @@ export class DereferenceStorer extends EventEmitter {
         throw err; // TBD: send to dead letter queue?
       }
 
-      await this.filestore.deleteById(item.iri);
+      await this.filestore.removeById(item.iri);
       await options.queue.processAndRemove(item);
     }
   }

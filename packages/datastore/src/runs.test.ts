@@ -21,6 +21,22 @@ describe('new', () => {
   });
 });
 
+describe('removeAll', () => {
+  it('removes all runs', async () => {
+    const runs = new Runs({connection});
+
+    await runs.save();
+    await runs.removeAll();
+
+    const allRuns = await connection.db
+      .selectFrom('runs')
+      .selectAll()
+      .execute();
+
+    expect(allRuns.length).toBe(0);
+  });
+});
+
 describe('save', () => {
   it('saves a run', async () => {
     const runs = new Runs({connection});

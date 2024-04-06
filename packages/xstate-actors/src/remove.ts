@@ -3,7 +3,7 @@ import {Filestore} from '@colonial-collections/filestore';
 import {fromPromise} from 'xstate';
 import {z} from 'zod';
 
-const removeObsoleteResourcesNotInQueueInputSchema = z.object({
+const removeResourcesInputSchema = z.object({
   logger: z.any().refine(val => val !== undefined, {
     message: 'logger must be defined',
   }),
@@ -12,25 +12,23 @@ const removeObsoleteResourcesNotInQueueInputSchema = z.object({
   resourceDir: z.string(),
 });
 
-export type RemoveObsoleteResourcesNotInQueueInput = z.input<
-  typeof removeObsoleteResourcesNotInQueueInputSchema
->;
+export type RemoveResourcesInput = z.input<typeof removeResourcesInputSchema>;
 
 // Compare the queued IRIs with those previously stored on file,
 // removing resources that have become obsolete
-export const removeObsoleteResourcesNotInQueue = fromPromise(
-  async ({input}: {input: RemoveObsoleteResourcesNotInQueueInput}) => {
-    const opts = removeObsoleteResourcesNotInQueueInputSchema.parse(input);
+export const removeResourcesNotInQueue = fromPromise(
+  async ({input}: {input: RemoveResourcesInput}) => {
+    const opts = removeResourcesInputSchema.parse(input);
 
     opts.logger.info(`Removing obsolete resources in "${opts.resourceDir}"`);
 
-    const filestore = new Filestore({dir: opts.resourceDir});
     const removedItems = await opts.registry.removeIfNotInQueue({
       type: opts.type,
     });
 
+    const filestore = new Filestore({dir: opts.resourceDir});
     for (const item of removedItems) {
-      await filestore.deleteById(item.iri);
+      await filestore.removeById(item.iri);
     }
 
     opts.logger.info(
@@ -39,24 +37,16 @@ export const removeObsoleteResourcesNotInQueue = fromPromise(
   }
 );
 
-const removeAllResourcesInputSchema = z.object({
-  logger: z.any().refine(val => val !== undefined, {
-    message: 'logger must be defined',
-  }),
-  resourceDir: z.string(),
-});
-
-export type RemoveAllResources = z.input<typeof removeAllResourcesInputSchema>;
-
 export const removeAllResources = fromPromise(
-  async ({input}: {input: RemoveAllResources}) => {
-    const opts = removeAllResourcesInputSchema.parse(input);
+  async ({input}: {input: RemoveResourcesInput}) => {
+    const opts = removeResourcesInputSchema.parse(input);
 
     opts.logger.info(`Removing all resources in "${opts.resourceDir}"`);
 
-    // Depending on the size of the directory this action can take some time
+    await opts.registry.removeAll();
+
     const filestore = new Filestore({dir: opts.resourceDir});
-    await filestore.deleteAll();
+    await filestore.removeAll(); // Depending on the size of the directory this action can take some time
 
     opts.logger.info(`Removed all resources in "${opts.resourceDir}"`);
   }

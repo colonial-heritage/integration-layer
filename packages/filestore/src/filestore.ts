@@ -65,7 +65,7 @@ export class Filestore {
     return path;
   }
 
-  private async deleteByPath(path: string) {
+  private async removeByPath(path: string) {
     pathSchema.parse(path);
 
     try {
@@ -79,15 +79,15 @@ export class Filestore {
     }
   }
 
-  async deleteById(id: string) {
+  async removeById(id: string) {
     idSchema.parse(id);
 
     const path = this.createPathFromId(id);
 
-    return this.deleteByPath(path);
+    return this.removeByPath(path);
   }
 
-  async deleteAll() {
+  async removeAll() {
     await rm(this.dir, {recursive: true, force: true});
   }
 
@@ -100,10 +100,10 @@ export class Filestore {
     const dataStream = serializer.serialize(opts.quadStream, {path});
     await pipeline(dataStream, writeStream);
 
-    // Delete empty file - the quad stream was probably empty
+    // Remove empty file - the quad stream was probably empty
     const stats = await stat(path);
     if (stats.size === 0) {
-      await this.deleteByPath(path);
+      await this.removeByPath(path);
     }
   }
 }

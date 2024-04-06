@@ -41,37 +41,38 @@ describe('createPathFromId', () => {
   });
 });
 
-describe('deleteById', () => {
+describe('removeById', () => {
+  const id = 'http://localhost/resource';
+
   it('does not throw if a resource does not exist', async () => {
-    await filestore.deleteAll();
+    await filestore.removeById(id);
   });
 
-  it('deletes a resource', async () => {
-    const id = 'http://localhost/resource';
+  it('removes a resource', async () => {
     const quadStream = await getQuadStreamFromFile('./fixtures/resource.ttl');
     await filestore.save({id, quadStream});
 
     const path = filestore.createPathFromId(id);
     expect(existsSync(path)).toBe(true);
 
-    await filestore.deleteById(id);
+    await filestore.removeById(id);
 
     expect(existsSync(path)).toBe(false);
   });
 });
 
-describe('deleteAll', () => {
+describe('removeAll', () => {
   it('does not throw if the resource directory does not exist', async () => {
-    await filestore.deleteAll();
+    await filestore.removeAll();
   });
 
-  it('deletes all resources', async () => {
+  it('removes all resources', async () => {
     const id = 'http://localhost/resource';
     const quadStream = await getQuadStreamFromFile('./fixtures/resource.ttl');
     await filestore.save({id, quadStream});
 
     expect(existsSync(dir)).toBe(true);
-    await filestore.deleteAll();
+    await filestore.removeAll();
     expect(existsSync(dir)).toBe(false);
   });
 });
@@ -88,7 +89,7 @@ describe('save', () => {
     expect(existsSync(path)).toBe(true);
   });
 
-  it('deletes a resource if resource is empty', async () => {
+  it('removes a resource if resource is empty', async () => {
     const quadStream = await getQuadStreamFromFile(
       './fixtures/empty-resource.ttl'
     );
