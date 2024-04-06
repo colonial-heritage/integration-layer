@@ -101,12 +101,12 @@ export class SparqlStorer extends EventEmitter {
           }`
         );
 
-        try {
-          for (const item of items) {
+        for (const item of items) {
+          try {
             await opts.queue.retry(item);
+          } catch (err) {
+            this.logger.error(err);
           }
-        } catch (err) {
-          this.logger.error(err);
         }
       });
     }
