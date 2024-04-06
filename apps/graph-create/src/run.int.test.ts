@@ -117,7 +117,7 @@ describe('run', () => {
     expect(await queue.size()).toBe(5); // Remaining items
   });
 
-  it('registers run and removes obsolete resources if queue is empty (states 1a, 1b, 3, 4a, 4b, 4c, 4d, 6)', async () => {
+  it('registers run and removes all resources if queue is empty (states 1a, 1b, 3, 4a, 4b, 4c, 4d, 6)', async () => {
     // Copy obsolete resources
     await cp('./fixtures/dbpedia', resourceDir, {recursive: true});
 
