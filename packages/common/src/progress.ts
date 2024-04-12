@@ -45,7 +45,7 @@ export class ProgressLogger {
     const runtime = intermediateTime - this.startTime;
 
     this.logger.info(
-      `Generated ${currentProgressPercentage}% of ${
+      `Processed ${currentProgressPercentage}% of ${
         opts.totalNumberOfResources
       } resources (runtime: ${PrettyMilliseconds(runtime)})`
     );
