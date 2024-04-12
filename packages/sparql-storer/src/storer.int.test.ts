@@ -2,10 +2,9 @@ import {SparqlStorer} from './storer.js';
 import {Connection, Queue} from '@colonial-collections/datastore';
 import {Filestore} from '@colonial-collections/filestore';
 import {existsSync} from 'node:fs';
-import {mkdir} from 'node:fs/promises';
+import {mkdir, rm} from 'node:fs/promises';
 import {join} from 'node:path';
 import {pino} from 'pino';
-import {rimraf} from 'rimraf';
 import {beforeEach, describe, expect, it} from 'vitest';
 
 let connection: Connection;
@@ -31,7 +30,7 @@ const query = `
 `;
 
 beforeEach(async () => {
-  await rimraf(tmpDir);
+  await rm(tmpDir, {recursive: true, force: true});
   await mkdir(tmpDir, {recursive: true});
   connection = await Connection.new({path: dataFile});
 });

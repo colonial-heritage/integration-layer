@@ -19,6 +19,7 @@
     "@colonial-collections/tsconfig": "*",
     "@rdfjs/types": "1.1.0",
     "get-stream": "8.0.1",
+    "msw": "2.2.2",
     "rdf-serialize": "2.2.2"
   },
   "tsup": {

@@ -7,8 +7,8 @@ import {
   registerRunAndCheckIfRunMustContinue,
 } from './run.js';
 import {Connection, Runs} from '@colonial-collections/datastore';
+import {rm} from 'node:fs/promises';
 import {join} from 'node:path';
-import {rimraf} from 'rimraf';
 import {pino} from 'pino';
 import {beforeEach, describe, expect, it} from 'vitest';
 import {createActor, toPromise} from 'xstate';
@@ -19,7 +19,7 @@ const logger = pino();
 let connection: Connection;
 
 beforeEach(async () => {
-  await rimraf(tmpDir);
+  await rm(tmpDir, {recursive: true, force: true});
   connection = await Connection.new({path: dataFile});
 });
 

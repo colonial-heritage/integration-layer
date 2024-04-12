@@ -1,13 +1,13 @@
 import {Filestore} from './filestore.js';
 import {existsSync} from 'node:fs';
+import {rm} from 'node:fs/promises';
 import rdfDereferencer from 'rdf-dereference';
-import {rimraf} from 'rimraf';
 import {beforeEach, describe, expect, it} from 'vitest';
 
 // Required to use ESM in both TypeScript and JavaScript
 const dereferencer = rdfDereferencer.default ?? rdfDereferencer;
 
-const dir = './tmp/';
+const tmpDir = './tmp/';
 let filestore: Filestore;
 
 async function getQuadStreamFromFile(path: string) {
@@ -19,8 +19,8 @@ async function getQuadStreamFromFile(path: string) {
 }
 
 beforeEach(async () => {
-  await rimraf(dir);
-  filestore = new Filestore({dir});
+  await rm(tmpDir, {recursive: true, force: true});
+  filestore = new Filestore({dir: tmpDir});
 });
 
 describe('createHashFromId', () => {
@@ -71,9 +71,9 @@ describe('removeAll', () => {
     const quadStream = await getQuadStreamFromFile('./fixtures/resource.ttl');
     await filestore.save({id, quadStream});
 
-    expect(existsSync(dir)).toBe(true);
+    expect(existsSync(tmpDir)).toBe(true);
     await filestore.removeAll();
-    expect(existsSync(dir)).toBe(false);
+    expect(existsSync(tmpDir)).toBe(false);
   });
 });
 

@@ -23,7 +23,7 @@ export type ConstructorOptions = z.input<typeof constructorOptionsSchema>;
 const runOptionsSchema = z.object({
   queue: z.instanceof(Queue),
   type: z.string().optional(),
-  numberOfResourcesPerRequest: z.number().min(1).optional().default(1),
+  numberOfResourcesPerRequest: z.number().min(1).default(1),
   numberOfConcurrentRequests: z.number().min(1).default(1),
   waitBetweenRequests: z.number().min(0).optional(),
   batchSize: z.number().min(1).optional(), // Undefined if the entire queue must be processed

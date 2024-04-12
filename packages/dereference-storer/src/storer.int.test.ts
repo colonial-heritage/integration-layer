@@ -2,11 +2,10 @@ import {DereferenceStorer} from './storer.js';
 import {Connection, Queue} from '@colonial-collections/datastore';
 import {Filestore} from '@colonial-collections/filestore';
 import {existsSync} from 'node:fs';
-import {mkdir} from 'node:fs/promises';
+import {mkdir, rm} from 'node:fs/promises';
 import {join} from 'node:path';
 import {setTimeout} from 'node:timers/promises';
 import {pino} from 'pino';
-import {rimraf} from 'rimraf';
 import {beforeEach, describe, expect, it} from 'vitest';
 
 let connection: Connection;
@@ -16,7 +15,7 @@ const dataFile = join(tmpDir, 'data.sqlite');
 const filestore = new Filestore({dir: resourceDir});
 
 beforeEach(async () => {
-  await rimraf(tmpDir);
+  await rm(tmpDir, {recursive: true, force: true});
   await mkdir(tmpDir, {recursive: true});
   connection = await Connection.new({path: dataFile});
 });

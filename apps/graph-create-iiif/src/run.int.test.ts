@@ -2,10 +2,9 @@ import {run} from './run.js';
 import {Connection, Queue, Runs} from '@colonial-collections/datastore';
 import {Filestore} from '@colonial-collections/filestore';
 import {existsSync} from 'node:fs';
-import {mkdir} from 'node:fs/promises';
+import {mkdir, rm} from 'node:fs/promises';
 import {join} from 'node:path';
 import {env} from 'node:process';
-import {rimraf} from 'rimraf';
 import {beforeEach, describe, expect, it} from 'vitest';
 
 let connection: Connection;
@@ -20,7 +19,7 @@ const triplydbService = 'kg';
 const graphName = 'https://example.org/graph-create-iiif-integration';
 
 beforeEach(async () => {
-  await rimraf(tmpDir);
+  await rm(tmpDir, {recursive: true, force: true});
   await mkdir(tmpDir, {recursive: true});
   connection = await Connection.new({path: dataFile});
 });

@@ -1,14 +1,14 @@
 import {Connection} from './connection.js';
 import {Kysely} from 'kysely';
+import {rm} from 'node:fs/promises';
 import {join} from 'node:path';
-import {rimraf} from 'rimraf';
 import {beforeEach, describe, expect, it} from 'vitest';
 
 const tmpDir = './tmp/connection';
 const dataFile = join(tmpDir, 'data.sqlite');
 
 beforeEach(async () => {
-  await rimraf(tmpDir);
+  await rm(tmpDir, {recursive: true, force: true});
 });
 
 describe('new', () => {
