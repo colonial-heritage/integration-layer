@@ -84,7 +84,7 @@ export class CommunityStorer {
       )
     );
 
-    // Data source ID
+    // Data source identifier
     const dataSourceId = DF.blankNode();
 
     store.addQuad(
@@ -95,7 +95,7 @@ export class CommunityStorer {
       )
     );
 
-    // Classification of the name
+    // Classification of the identifier
     store.addQuad(
       DF.quad(
         dataSourceId,
