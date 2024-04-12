@@ -1,0 +1,10 @@
+<https://example.org/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.cidoc-crm.org/cidoc-crm/E74_Group> .
+<https://example.org/1> <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://vocab.getty.edu/aat/300435377> .
+<https://example.org/1> <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by> _:df_3_0 .
+<https://example.org/1> <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by> _:df_3_1 .
+_:df_3_0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.cidoc-crm.org/cidoc-crm/E33_E41_Linguistic_Appellation> .
+_:df_3_0 <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://vocab.getty.edu/aat/300404670> .
+_:df_3_0 <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> "Example 1" .
+_:df_3_1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.cidoc-crm.org/cidoc-crm/E42_Identifier> .
+_:df_3_1 <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://vocab.getty.edu/aat/300404621> .
+_:df_3_1 <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> "1" .
