@@ -15,7 +15,7 @@
     "@colonial-collections/datastore": "*",
     "@colonial-collections/filestore": "*",
     "@colonial-collections/sparql-generator": "*",
-    "fastq": "1.15.0",
+    "fastq": "1.17.1",
     "zod": "3.22.4"
   },
   "devDependencies": {
