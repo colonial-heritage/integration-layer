@@ -64,12 +64,22 @@ export class SparqlStorer extends EventEmitter {
 
     const process = async (items: QueueItem[]) => {
       const irisOfItems = items.map(item => item.iri);
-      const quadStream = await this.generator.getResources(irisOfItems);
       const id = irisOfItems.join(); // One ID for all items in this set
-      await this.filestore.save({id, quadStream});
 
-      for (const item of items) {
-        await opts.queue.processAndSave(item);
+      try {
+        const quadStream = await this.generator.getResources(irisOfItems);
+        await this.filestore.save({id, quadStream});
+        for (const item of items) {
+          await opts.queue.processAndSave(item);
+        }
+      } catch (err) {
+        for (const item of items) {
+          try {
+            await opts.queue.retry(item);
+          } catch (err) {
+            this.logger.error(err); // E.g. if there can be no more retries
+          }
+        }
       }
 
       numberOfProcessedResources += items.length;
@@ -89,7 +99,6 @@ export class SparqlStorer extends EventEmitter {
 
     // Split items into chunks: [1, 2, 3, 4, 5] => [[1, 2], [3, 4], [5]]
     const chunks = [...toChunks(allItems, opts.numberOfResourcesPerRequest)];
-    let erroredItems: QueueItem[] = [];
 
     for (const items of chunks) {
       // Do not 'await processQueue.push(item)' - it processes items sequentially, not in parallel
@@ -101,20 +110,9 @@ export class SparqlStorer extends EventEmitter {
             err.message
           }`
         );
-
-        // We cannot retry the errored items in the catch(): that's an async action
-        erroredItems = erroredItems.concat(items);
       });
     }
 
     await processQueue.drained();
-
-    for (const item of erroredItems) {
-      try {
-        await opts.queue.retry(item);
-      } catch (err) {
-        this.logger.error(err);
-      }
-    }
   }
 }
