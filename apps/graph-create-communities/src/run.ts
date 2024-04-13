@@ -1,22 +1,22 @@
 import {fetchCommunities} from './fetch.js';
 import {storeCommunitiesAsRdfInFile} from './store.js';
-import {uploadRdfFile} from './upload.js';
 import {getLogger} from '@colonial-collections/common';
 import {type Community} from '@colonial-collections/community-storer';
-import {finalize} from '@colonial-collections/xstate-actors';
+import {finalize, updateService} from '@colonial-collections/xstate-actors';
 import type {pino} from 'pino';
 import {assign, createActor, setup, toPromise} from 'xstate';
 import {z} from 'zod';
 
 const inputSchema = z.object({
-  file: z.string(),
-  graph: z.string(),
+  resourceDir: z.string(),
   triplydbInstanceUrl: z.string(),
   triplydbApiToken: z.string(),
   triplydbAccount: z.string(),
   triplydbDataset: z.string(),
   triplydbService: z.string(),
   triplydbServiceTemplatesFile: z.string().optional(),
+  graphName: z.string(),
+  tempDir: z.string().optional(),
 });
 
 export type Input = z.input<typeof inputSchema>;
@@ -26,10 +26,10 @@ export async function run(input: Input) {
 
   /*
     High-level workflow:
-    Fetch communities from the data source
+    Fetch communities from data source
     If there are communities:
-      Store the communties in an RDF file
-      Upload the RDF file to the data platform
+      Store communties in RDF file
+      Sync data to data platform
     Finalize
   */
 
@@ -46,7 +46,7 @@ export async function run(input: Input) {
       fetchCommunities,
       finalize,
       storeCommunitiesAsRdfInFile,
-      uploadRdfFile,
+      updateService,
     },
   }).createMachine({
     id: 'main',
@@ -90,16 +90,16 @@ export async function run(input: Input) {
           id: 'storeCommunitiesAsRdfInFile',
           src: 'storeCommunitiesAsRdfInFile',
           input: ({context}) => context,
-          onDone: 'uploadRdfFile',
+          onDone: 'updateService',
         },
       },
       // State 4
-      uploadRdfFile: {
+      updateService: {
         invoke: {
-          id: 'uploadRdfFile',
-          src: 'uploadRdfFile',
+          id: 'updateService',
+          src: 'updateService',
           input: ({context}) => context,
-          onDone: 'finalize',
+          onDone: '#main.finalize',
         },
       },
       // State 5

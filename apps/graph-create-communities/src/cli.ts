@@ -10,8 +10,7 @@ cli
     'create',
     'Create a graph by fetching communities from the data source'
   )
-  .option('--file <string>', 'RDF file to upload')
-  .option('--graph <string>', 'IRI of the graph')
+  .option('--resource-dir <string>', 'Directory for storing RDF resources')
   .option('--triplydb-instance-url <string>', 'TriplyDB instance URL')
   .option('--triplydb-api-token <string>', 'TriplyDB API token')
   .option('--triplydb-account <string>', 'TriplyDB account')
@@ -21,6 +20,11 @@ cli
     '--triplydb-service-templates-file [string]',
     'Templates file for the TriplyDB service'
   )
+  .option(
+    '--graph-name <string>',
+    'Name of the graph to upload the RDF resources to'
+  )
+  .option('--temp-dir [string]', 'Directory for storing temporary files')
   .action(async (input: Input) => {
     import('./run.js').then(action => action.run(input));
   });

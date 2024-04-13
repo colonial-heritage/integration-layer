@@ -11,7 +11,6 @@ import {createActor, toPromise} from 'xstate';
 
 const logger = pino();
 const tmpDir = './tmp';
-const communitiesFile = join(tmpDir, 'communities.nt');
 
 beforeEach(async () => {
   await rm(tmpDir, {recursive: true, force: true});
@@ -22,7 +21,7 @@ describe('storeCommunitiesAsRdfInFile', () => {
   it('stores communities', async () => {
     const input: StoreCommunitiesAsRdfInFileSchemaInput = {
       logger,
-      file: communitiesFile,
+      resourceDir: tmpDir,
       communities: [
         {
           iri: 'https://example.org/1',
@@ -34,6 +33,7 @@ describe('storeCommunitiesAsRdfInFile', () => {
 
     await toPromise(createActor(storeCommunitiesAsRdfInFile, {input}).start());
 
+    const communitiesFile = join(tmpDir, 'communities.nt');
     expect(existsSync(communitiesFile)).toBe(true);
   });
 });
