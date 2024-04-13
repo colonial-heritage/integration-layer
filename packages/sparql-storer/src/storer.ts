@@ -65,7 +65,7 @@ export class SparqlStorer extends EventEmitter {
     const process = async (items: QueueItem[]) => {
       const irisOfItems = items.map(item => item.iri);
       const quadStream = await this.generator.getResources(irisOfItems);
-      const id = irisOfItems.join(); // A bit artificial, just to have an ID
+      const id = irisOfItems.join(); // One ID for all items in this set
       await this.filestore.save({id, quadStream});
 
       for (const item of items) {
@@ -89,10 +89,11 @@ export class SparqlStorer extends EventEmitter {
 
     // Split items into chunks: [1, 2, 3, 4, 5] => [[1, 2], [3, 4], [5]]
     const chunks = [...toChunks(allItems, opts.numberOfResourcesPerRequest)];
+    let erroredItems: QueueItem[] = [];
 
     for (const items of chunks) {
       // Do not 'await processQueue.push(item)' - it processes items sequentially, not in parallel
-      processQueue.push(items).catch(async err => {
+      processQueue.push(items).catch(err => {
         const irisOfItems = items.map(item => item.iri);
         this.logger.error(
           err,
@@ -101,16 +102,19 @@ export class SparqlStorer extends EventEmitter {
           }`
         );
 
-        for (const item of items) {
-          try {
-            await opts.queue.retry(item);
-          } catch (err) {
-            this.logger.error(err);
-          }
-        }
+        // We cannot retry the errored items in the catch(): that's an async action
+        erroredItems = erroredItems.concat(items);
       });
     }
 
     await processQueue.drained();
+
+    for (const item of erroredItems) {
+      try {
+        await opts.queue.retry(item);
+      } catch (err) {
+        this.logger.error(err);
+      }
+    }
   }
 }

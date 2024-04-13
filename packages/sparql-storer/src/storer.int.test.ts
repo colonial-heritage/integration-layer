@@ -177,4 +177,28 @@ describe('run', () => {
     expect(existsSync(pathOfIri2)).toBe(true);
     expect(existsSync(pathOfIri3)).toBe(true);
   });
+
+  it('retries items if they cannot be stored, removing them from the queue if the maximum retry count is reached', async () => {
+    const queue = new Queue({connection});
+    await queue.push({iri: 'http://example.org/1234'});
+
+    const storer = new SparqlStorer({
+      logger: pino(),
+      resourceDir,
+      endpointUrl: 'http://localhost', // Unreachable
+      query,
+    });
+
+    await storer.run({queue});
+    const queueSizeAfterRun1 = await queue.size();
+    expect(queueSizeAfterRun1).toBe(1);
+
+    await storer.run({queue});
+    const queueSizeAfterRun2 = await queue.size();
+    expect(queueSizeAfterRun2).toBe(1);
+
+    await storer.run({queue});
+    const queueSizeAfterRun3 = await queue.size();
+    expect(queueSizeAfterRun3).toBe(0);
+  });
 });
