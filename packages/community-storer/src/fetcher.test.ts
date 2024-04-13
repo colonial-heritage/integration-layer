@@ -2,10 +2,6 @@ import {CommunityFetcher} from './fetcher.js';
 import clerk from '@clerk/clerk-sdk-node';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 
-afterEach(() => {
-  vi.restoreAllMocks();
-});
-
 function createCommunityBatch() {
   const communityBatch = [];
 
@@ -24,6 +20,10 @@ function createCommunityBatch() {
   return communityBatch;
 }
 
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 describe('getAll', () => {
   it('gets all communities', async () => {
     const communityBatch1 = createCommunityBatch();
@@ -39,8 +39,8 @@ describe('getAll', () => {
     const fetcher = new CommunityFetcher();
     const communities = await fetcher.getAll();
 
-    expect(organizationListSpy).toHaveBeenCalledTimes(3);
-    expect(communities).toHaveLength(200);
+    expect(organizationListSpy).toHaveBeenCalledTimes(3); // Initial call + two recursive calls
+    expect(communities).toHaveLength(200); // 2 batches; 100 communities per batch
     expect(communities[0]).toStrictEqual({
       iri: expect.stringContaining('https://example.org/'),
       id: expect.stringMatching(/.+/),

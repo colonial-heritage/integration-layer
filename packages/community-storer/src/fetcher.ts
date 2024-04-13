@@ -10,6 +10,7 @@ const organizationSchema = z.object({
   }),
 });
 
+// Beware: env var `CLERK_SECRET_KEY` must be set: https://clerk.com/docs/references/nodejs/overview
 export class CommunityFetcher {
   private async loadFromSource(limit = 100, offset = 0) {
     let organizations = await clerk.organizations.getOrganizationList({
