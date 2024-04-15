@@ -62,8 +62,6 @@ export class DereferenceStorer extends EventEmitter {
 
     // If execution gets here, it's a create or update action
 
-    await setTimeout(options.waitBetweenRequests); // Try not to hurt the server or trigger its rate limiter
-
     try {
       const quadStream = await this.dereferencer.getResource(item.iri);
       await this.filestore.save({id: item.iri, quadStream});
@@ -99,17 +97,18 @@ export class DereferenceStorer extends EventEmitter {
     const process = async (item: QueueItem) => {
       try {
         await this.process(opts, item);
-        // eslint-disable-next-line no-useless-catch
       } catch (err) {
-        throw err;
-      } finally {
-        numberOfProcessedResources++;
-        this.emit(
-          'processed-resource',
-          items.length,
-          numberOfProcessedResources
-        );
+        try {
+          await opts.queue.retry(item);
+        } catch (err) {
+          this.logger.error(err);
+        }
       }
+
+      numberOfProcessedResources++;
+      this.emit('processed-resource', items.length, numberOfProcessedResources);
+
+      await setTimeout(opts.waitBetweenRequests); // Try not to hurt the server or trigger its rate limiter
     };
 
     const processQueue = fastq.promise(
@@ -119,17 +118,11 @@ export class DereferenceStorer extends EventEmitter {
 
     for (const item of items) {
       // Do not 'await processQueue.push(item)' - it processes items sequentially, not in parallel
-      processQueue.push(item).catch(async err => {
+      processQueue.push(item).catch(err => {
         this.logger.error(
           err,
           `An error occurred when processing "${item.iri}": ${err.message}`
         );
-
-        try {
-          await opts.queue.retry(item);
-        } catch (err) {
-          this.logger.error(err);
-        }
       });
     }
 

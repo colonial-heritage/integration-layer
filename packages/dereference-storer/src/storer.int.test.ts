@@ -4,7 +4,6 @@ import {Filestore} from '@colonial-collections/filestore';
 import {existsSync} from 'node:fs';
 import {mkdir, rm} from 'node:fs/promises';
 import {join} from 'node:path';
-import {setTimeout} from 'node:timers/promises';
 import {pino} from 'pino';
 import {beforeEach, describe, expect, it} from 'vitest';
 
@@ -181,11 +180,9 @@ describe('run', () => {
     expect(existsSync(pathOfIri)).toBe(false);
   });
 
-  it('registers items that result in an error status for retry', async () => {
-    const iri = 'https://httpbin.org/status/500';
-
+  it('retries items if they cannot be stored, removing them from the queue if the maximum retry count is reached', async () => {
     const queue = new Queue({connection});
-    await queue.push({iri});
+    await queue.push({iri: 'https://httpbin.org/status/500'});
 
     const storer = new DereferenceStorer({
       logger: pino(),
@@ -193,15 +190,15 @@ describe('run', () => {
     });
 
     await storer.run({queue});
+    const queueSizeAfterRun1 = await queue.size();
+    expect(queueSizeAfterRun1).toBe(1);
 
-    // Due to the async queue processing, the retry registration may not have been completed yet
-    await setTimeout(100);
+    await storer.run({queue});
+    const queueSizeAfterRun2 = await queue.size();
+    expect(queueSizeAfterRun2).toBe(1);
 
-    const items = await queue.getAll();
-
-    expect(items[0]).toMatchObject({
-      iri,
-      retry_count: 1,
-    });
+    await storer.run({queue});
+    const queueSizeAfterRun3 = await queue.size();
+    expect(queueSizeAfterRun3).toBe(0);
   });
 });
