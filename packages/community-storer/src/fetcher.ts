@@ -1,18 +1,25 @@
-import type {Community} from './definitions.js';
+import {type Community, type Person} from './definitions.js';
 import clerk from '@clerk/clerk-sdk-node';
 import {z} from 'zod';
 
 const organizationSchema = z.object({
-  id: z.union([z.string(), z.number()]),
+  id: z.coerce.string(),
   name: z.string(),
   publicMetadata: z.object({
     iri: z.string(),
   }),
 });
 
+const userSchema = z.object({
+  id: z.coerce.string(),
+  publicMetadata: z.object({
+    iri: z.string(),
+  }),
+});
+
 // Beware: env var `CLERK_SECRET_KEY` must be set: https://clerk.com/docs/references/nodejs/overview
-export class CommunityFetcher {
-  private async loadFromSource(limit = 100, offset = 0) {
+export class Fetcher {
+  private async loadOrganizationsFromSource(limit = 100, offset = 0) {
     let organizations = await clerk.organizations.getOrganizationList({
       limit,
       offset,
@@ -20,7 +27,7 @@ export class CommunityFetcher {
 
     // Load more organizations recursively, if any
     if (organizations.length === limit) {
-      const moreOrganizations = await this.loadFromSource(
+      const moreOrganizations = await this.loadOrganizationsFromSource(
         limit,
         offset + limit
       );
@@ -30,8 +37,8 @@ export class CommunityFetcher {
     return organizations;
   }
 
-  async getAll() {
-    const organizations = await this.loadFromSource();
+  async getCommunities() {
+    const organizations = await this.loadOrganizationsFromSource();
 
     const communities = organizations.reduce(
       (communities: Community[], organization) => {
@@ -52,5 +59,38 @@ export class CommunityFetcher {
     );
 
     return communities;
+  }
+
+  private async loadUsersFromSource(limit = 100, offset = 0) {
+    let users = await clerk.users.getUserList({limit, offset});
+
+    // Load more users recursively, if any
+    if (users.length === limit) {
+      const moreUsers = await this.loadUsersFromSource(limit, offset + limit);
+      users = users.concat(moreUsers);
+    }
+
+    return users;
+  }
+
+  async getPersons() {
+    const users = await this.loadUsersFromSource();
+
+    const persons = users.reduce((persons: Person[], user) => {
+      const result = userSchema.safeParse(user);
+
+      // Keep only users with the required data
+      if (result.success) {
+        // Not processing the `name`, for privacy reasons
+        persons.push({
+          iri: result.data.publicMetadata.iri,
+          id: result.data.id.toString(),
+        });
+      }
+
+      return persons;
+    }, []);
+
+    return persons;
   }
 }
