@@ -7,3 +7,10 @@ export const communitySchema = z.object({
 });
 
 export type Community = z.infer<typeof communitySchema>;
+
+export const personSchema = z.object({
+  iri: z.string(),
+  id: z.string(),
+});
+
+export type Person = z.infer<typeof personSchema>;

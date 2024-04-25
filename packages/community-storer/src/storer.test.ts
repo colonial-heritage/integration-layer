@@ -1,21 +1,22 @@
-import {CommunityStorer} from './storer.js';
+import {Storer} from './storer.js';
 import {mkdir, readFile, rm} from 'node:fs/promises';
 import {join} from 'node:path';
 import {beforeEach, describe, expect, it} from 'vitest';
 
 const tmpDir = './tmp';
-const communitiesFile = join(tmpDir, 'communities.nt');
 
 beforeEach(async () => {
   await rm(tmpDir, {recursive: true, force: true});
   await mkdir(tmpDir, {recursive: true});
 });
 
-describe('toFile', () => {
-  it('stores the communities in a file', async () => {
-    const storer = new CommunityStorer();
-    await storer.toFile({
-      path: communitiesFile,
+describe('writeCommunitiesToFile', () => {
+  const outputFile = join(tmpDir, 'communities.nt');
+
+  it('writes the communities to a file', async () => {
+    const storer = new Storer();
+    await storer.writeCommunitiesToFile({
+      path: outputFile,
       communities: [
         {
           iri: 'https://example.org/1',
@@ -26,7 +27,7 @@ describe('toFile', () => {
     });
 
     // Cheap check (string comparison instead of a graph comparison) but a sufficient one
-    const triples = await readFile(communitiesFile, 'utf-8');
+    const triples = await readFile(outputFile, 'utf-8');
 
     expect(triples)
       .toStrictEqual(`<https://example.org/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.cidoc-crm.org/cidoc-crm/E74_Group> .
@@ -39,6 +40,34 @@ _:df_3_0 <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> "Example
 _:df_3_1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.cidoc-crm.org/cidoc-crm/E42_Identifier> .
 _:df_3_1 <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://vocab.getty.edu/aat/300404621> .
 _:df_3_1 <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> "1" .
+`);
+  });
+});
+
+describe('writePersonsToFile', () => {
+  const outputFile = join(tmpDir, 'communities.nt');
+
+  it('writes the persons to a file', async () => {
+    const storer = new Storer();
+    await storer.writePersonsToFile({
+      path: outputFile,
+      persons: [
+        {
+          iri: 'https://example.org/1',
+          id: '1',
+        },
+      ],
+    });
+
+    // Cheap check (string comparison instead of a graph comparison) but a sufficient one
+    const triples = await readFile(outputFile, 'utf-8');
+
+    expect(triples)
+      .toStrictEqual(`<https://example.org/1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.cidoc-crm.org/cidoc-crm/E21_Person> .
+<https://example.org/1> <http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by> _:df_3_2 .
+_:df_3_2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.cidoc-crm.org/cidoc-crm/E42_Identifier> .
+_:df_3_2 <http://www.cidoc-crm.org/cidoc-crm/P2_has_type> <http://vocab.getty.edu/aat/300404621> .
+_:df_3_2 <http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content> "1" .
 `);
   });
 });

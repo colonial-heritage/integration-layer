@@ -1,6 +1,7 @@
 import {
   communitySchema,
-  CommunityStorer,
+  personSchema,
+  Storer,
 } from '@colonial-collections/community-storer';
 import {join} from 'node:path';
 import {fromPromise} from 'xstate';
@@ -25,7 +26,31 @@ export const storeCommunitiesAsRdfInFile = fromPromise(
     opts.logger.info('Storing communities as RDF in file');
 
     const path = join(opts.resourceDir, 'communities.nt');
-    const storer = new CommunityStorer();
-    await storer.toFile({path, communities: opts.communities});
+    const storer = new Storer();
+    await storer.writeCommunitiesToFile({path, communities: opts.communities});
+  }
+);
+
+const storePersonsAsRdfInFileSchema = z.object({
+  logger: z.any().refine(val => val !== undefined, {
+    message: 'logger must be defined',
+  }),
+  resourceDir: z.string(),
+  persons: z.array(personSchema),
+});
+
+export type StorePersonsAsRdfInFileSchemaInput = z.infer<
+  typeof storePersonsAsRdfInFileSchema
+>;
+
+export const storePersonsAsRdfInFile = fromPromise(
+  async ({input}: {input: StorePersonsAsRdfInFileSchemaInput}) => {
+    const opts = storePersonsAsRdfInFileSchema.parse(input);
+
+    opts.logger.info('Storing persons as RDF in file');
+
+    const path = join(opts.resourceDir, 'persons.nt');
+    const storer = new Storer();
+    await storer.writePersonsToFile({path, persons: opts.persons});
   }
 );
