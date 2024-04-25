@@ -1,6 +1,8 @@
 import {
   storeCommunitiesAsRdfInFile,
   StoreCommunitiesAsRdfInFileSchemaInput,
+  storePersonsAsRdfInFile,
+  StorePersonsAsRdfInFileSchemaInput,
 } from './store.js';
 import {existsSync} from 'node:fs';
 import {mkdir, rm} from 'node:fs/promises';
@@ -33,7 +35,27 @@ describe('storeCommunitiesAsRdfInFile', () => {
 
     await toPromise(createActor(storeCommunitiesAsRdfInFile, {input}).start());
 
-    const communitiesFile = join(tmpDir, 'communities.nt');
-    expect(existsSync(communitiesFile)).toBe(true);
+    const outputFile = join(tmpDir, 'communities.nt');
+    expect(existsSync(outputFile)).toBe(true);
+  });
+});
+
+describe('storePersonsAsRdfInFile', () => {
+  it('stores persons', async () => {
+    const input: StorePersonsAsRdfInFileSchemaInput = {
+      logger,
+      resourceDir: tmpDir,
+      persons: [
+        {
+          iri: 'https://example.org/1',
+          id: '1',
+        },
+      ],
+    };
+
+    await toPromise(createActor(storePersonsAsRdfInFile, {input}).start());
+
+    const outputFile = join(tmpDir, 'persons.nt');
+    expect(existsSync(outputFile)).toBe(true);
   });
 });

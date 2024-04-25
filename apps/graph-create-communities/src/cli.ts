@@ -8,7 +8,7 @@ const cli = cac();
 cli
   .command(
     'create',
-    'Create a graph by fetching communities from the data source'
+    'Create a graph by fetching communities and persons from the data source'
   )
   .option('--resource-dir <string>', 'Directory for storing RDF resources')
   .option('--triplydb-instance-url <string>', 'TriplyDB instance URL')

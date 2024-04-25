@@ -1,7 +1,7 @@
-import {fetchCommunities} from './fetch.js';
-import {storeCommunitiesAsRdfInFile} from './store.js';
+import {fetchCommunities, fetchPersons} from './fetch.js';
+import {storeCommunitiesAsRdfInFile, storePersonsAsRdfInFile} from './store.js';
 import {getLogger} from '@colonial-collections/common';
-import {type Community} from '@colonial-collections/community-storer';
+import {Person, type Community} from '@colonial-collections/community-storer';
 import {finalize, updateService} from '@colonial-collections/xstate-actors';
 import type {pino} from 'pino';
 import {assign, createActor, setup, toPromise} from 'xstate';
@@ -29,7 +29,10 @@ export async function run(input: Input) {
     Fetch communities from data source
     If there are communities:
       Store communties in RDF file
-      Sync data to data platform
+    Fetch persons from data source
+    If there are persons:
+      Store persons in RDF file
+    Sync communities and/or persons in RDF files to data platform
     Finalize
   */
 
@@ -40,12 +43,15 @@ export async function run(input: Input) {
         startTime: number;
         logger: pino.Logger;
         communities: Community[];
+        persons: Person[];
       };
     },
     actors: {
       fetchCommunities,
+      fetchPersons,
       finalize,
       storeCommunitiesAsRdfInFile,
+      storePersonsAsRdfInFile,
       updateService,
     },
   }).createMachine({
@@ -56,6 +62,7 @@ export async function run(input: Input) {
       startTime: Date.now(),
       logger: getLogger(),
       communities: [],
+      persons: [],
     }),
     states: {
       // State 1
@@ -80,7 +87,7 @@ export async function run(input: Input) {
             guard: ({context}) => context.communities.length > 0,
           },
           {
-            target: 'finalize',
+            target: 'fetchPersons',
           },
         ],
       },
@@ -90,19 +97,54 @@ export async function run(input: Input) {
           id: 'storeCommunitiesAsRdfInFile',
           src: 'storeCommunitiesAsRdfInFile',
           input: ({context}) => context,
-          onDone: 'updateService',
+          onDone: 'fetchPersons',
         },
       },
       // State 4
+      fetchPersons: {
+        invoke: {
+          id: 'fetchPersons',
+          src: 'fetchPersons',
+          input: ({context}) => context,
+          onDone: {
+            target: 'evaluatePersons',
+            actions: assign({
+              persons: ({event}) => event.output,
+            }),
+          },
+        },
+      },
+      // State 5
+      evaluatePersons: {
+        always: [
+          {
+            target: 'storePersonsAsRdfInFile',
+            guard: ({context}) => context.persons.length > 0,
+          },
+          {
+            target: 'updateService',
+          },
+        ],
+      },
+      // State 6
+      storePersonsAsRdfInFile: {
+        invoke: {
+          id: 'storePersonsAsRdfInFile',
+          src: 'storePersonsAsRdfInFile',
+          input: ({context}) => context,
+          onDone: 'updateService',
+        },
+      },
+      // State 7
       updateService: {
         invoke: {
           id: 'updateService',
           src: 'updateService',
           input: ({context}) => context,
-          onDone: '#main.finalize',
+          onDone: 'finalize',
         },
       },
-      // State 5
+      // State 8
       finalize: {
         invoke: {
           id: 'finalize',
