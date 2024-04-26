@@ -28,7 +28,7 @@ export async function run(input: Input) {
     High-level workflow:
     Fetch communities from data source
     If there are communities:
-      Store communties in RDF file
+      Store communities in RDF file
     Fetch persons from data source
     If there are persons:
       Store persons in RDF file
