@@ -11,7 +11,7 @@
     "test:once": "vitest --run"
   },
   "dependencies": {
-    "@clerk/clerk-sdk-node": "4.13.14",
+    "@clerk/clerk-sdk-node": "5.0.1",
     "rdf-data-factory": "1.1.2",
     "rdf-serialize": "2.2.2",
     "rdf-stores": "1.0.0",

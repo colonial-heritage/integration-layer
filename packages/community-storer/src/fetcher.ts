@@ -1,5 +1,5 @@
 import {type Community, type Person} from './definitions.js';
-import clerk from '@clerk/clerk-sdk-node';
+import {clerkClient} from '@clerk/clerk-sdk-node';
 import {z} from 'zod';
 
 const organizationSchema = z.object({
@@ -18,12 +18,14 @@ const userSchema = z.object({
 });
 
 // Beware: env var `CLERK_SECRET_KEY` must be set: https://clerk.com/docs/references/nodejs/overview
+// Docs: https://clerk.com/docs/references/nodejs/available-methods
 export class Fetcher {
   private async loadOrganizationsFromSource(limit = 100, offset = 0) {
-    let organizations = await clerk.organizations.getOrganizationList({
-      limit,
-      offset,
-    });
+    let {data: organizations} =
+      await clerkClient.organizations.getOrganizationList({
+        limit,
+        offset,
+      });
 
     // Load more organizations recursively, if any
     if (organizations.length === limit) {
@@ -62,7 +64,7 @@ export class Fetcher {
   }
 
   private async loadUsersFromSource(limit = 100, offset = 0) {
-    let users = await clerk.users.getUserList({limit, offset});
+    let {data: users} = await clerkClient.users.getUserList({limit, offset});
 
     // Load more users recursively, if any
     if (users.length === limit) {

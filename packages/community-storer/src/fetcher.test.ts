@@ -1,5 +1,5 @@
 import {Fetcher} from './fetcher.js';
-import clerk from '@clerk/clerk-sdk-node';
+import {clerkClient} from '@clerk/clerk-sdk-node';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 
 afterEach(() => {
@@ -22,7 +22,7 @@ describe('getCommunities', () => {
       });
     }
 
-    return communityBatch;
+    return {data: communityBatch};
   }
 
   it('gets the communities', async () => {
@@ -30,10 +30,10 @@ describe('getCommunities', () => {
     const communityBatch2 = createCommunityBatch();
 
     const organizationListSpy = vi
-      .spyOn(clerk.organizations, 'getOrganizationList')
-      // @ts-expect-error:TS2740
+      .spyOn(clerkClient.organizations, 'getOrganizationList')
+      // @ts-expect-error:TS2345
       .mockResolvedValueOnce(communityBatch1)
-      // @ts-expect-error:TS2740
+      // @ts-expect-error:TS2345
       .mockResolvedValueOnce(communityBatch2);
 
     const fetcher = new Fetcher();
@@ -64,7 +64,7 @@ describe('getPersons', () => {
       });
     }
 
-    return personBatch;
+    return {data: personBatch};
   }
 
   it('gets the persons', async () => {
@@ -72,10 +72,10 @@ describe('getPersons', () => {
     const personBatch2 = createPersonBatch();
 
     const userListSpy = vi
-      .spyOn(clerk.users, 'getUserList')
-      // @ts-expect-error:TS2740
+      .spyOn(clerkClient.users, 'getUserList')
+      // @ts-expect-error:TS2345
       .mockResolvedValueOnce(personBatch1)
-      // @ts-expect-error:TS2740
+      // @ts-expect-error:TS2345
       .mockResolvedValueOnce(personBatch2);
 
     const fetcher = new Fetcher();
