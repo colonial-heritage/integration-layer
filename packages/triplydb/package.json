@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@triply/triplydb": "7.0.2",
-    "glob": "10.3.10",
+    "glob": "10.4.1",
     "tar": "6.2.0",
     "zod": "3.22.4"
   },
