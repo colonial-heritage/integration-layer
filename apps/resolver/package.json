@@ -11,7 +11,7 @@
     "start": "node ./dist/index.js",
     "test": "vitest --coverage",
     "test:once": "vitest --run",
-    "vercel-build": "turbo run build && cp -r dist/* api && mkdir -p ./public && echo 'User-agent: *\nAllow: /' > ./public/robots.txt"
+    "vercel-build": "turbo run build && cp -r dist/* api && mkdir -p ./public && echo 'User-agent: *\nDisallow: /' > ./public/robots.txt"
   },
   "dependencies": {
     "@hono/node-server": "1.7.0",
