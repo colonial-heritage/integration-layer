@@ -8,12 +8,6 @@ type ResolverEnv = {
 
 export const api = new Hono();
 
-// Disallow e.g. web crawlers (these cause massive function invocations)
-api.get('/robots.txt', c => {
-  return c.text(`User-agent: *
-Disallow: /`);
-});
-
 api.get('/ark:/:id/*', c => {
   const resolverEnv = env<ResolverEnv>(c);
   const arkPath = createN2TIriFromIri(c.req.url);
