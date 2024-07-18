@@ -10,7 +10,7 @@ export const api = new Hono();
 
 // Disallow e.g. web crawlers (these cause massive function invocations)
 api.get('/robots.txt', c => {
-  return c.body(`User-agent: *
+  return c.text(`User-agent: *
 Disallow: /`);
 });
 

@@ -1,6 +1,19 @@
 import {api} from './api.js';
 import {describe, expect, it} from 'vitest';
 
+describe('/robots.txt', () => {
+  it('returns', async () => {
+    const req = new Request('http://localhost/robots.txt', {
+      method: 'GET',
+    });
+    const res = await api.request(req);
+
+    expect(res.status).toBe(200);
+    expect(await res.text()).toBe(`User-agent: *
+Disallow: /`);
+  });
+});
+
 describe('/ark:/', () => {
   it('redirects requests', async () => {
     const req = new Request(
