@@ -6,7 +6,7 @@ import {z} from 'zod';
 
 const constructorOptionsSchema = z.object({
   connection: z.instanceof(Connection),
-  maxRetryCount: z.number().int().min(0).default(1), // Two attempts in total: original + one retry
+  maxRetryCount: z.number().int().min(0).default(0), // No retries by default
 });
 
 export type QueueConstructorOptions = z.input<typeof constructorOptionsSchema>;
